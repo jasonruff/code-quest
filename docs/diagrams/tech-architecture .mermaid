@@ -1,0 +1,46 @@
+flowchart TD
+    subgraph User Interface
+        UI[Game UI] --> GameEngine[Game Engine]
+        UI --> CodeEditor[Code Editor]
+        UI --> CharacterUI[AI Assistant UI]
+    end
+    
+    subgraph Core Game Systems
+        GameEngine --> GameState[Game State Manager]
+        GameEngine --> Physics[Physics System]
+        GameEngine --> Rendering[Rendering System]
+        GameState --> SaveSystem[Save/Load System]
+        GameState --> MissionSystem[Mission System]
+    end
+    
+    subgraph Learning Systems
+        CodeEditor --> CodeExecution[Code Execution Engine]
+        CodeExecution --> CodeValidation[Code Validation]
+        CodeValidation --> LearningProgress[Learning Progress Tracker]
+        CodeValidation --> AssistantTrigger[Assistant Trigger System]
+    end
+    
+    subgraph AI Assistant System
+        AssistantTrigger --> ContextBuilder[Context Builder]
+        LearningProgress --> ContextBuilder
+        ContextBuilder --> PromptGenerator[Prompt Generator]
+        PromptGenerator -->         LLMService[Claude API Service]
+        LLMService --> ResponseProcessor[Response Processor]
+        ResponseProcessor --> CharacterUI
+        
+        PlayerHistory[Player History] <--> ContextBuilder
+        ResponseCache[Response Cache] <--> ResponseProcessor
+        FallbackResponses[Fallback Responses] <--> ResponseProcessor
+    end
+    
+    subgraph Backend Services
+        Auth[Authentication Service]
+        Analytics[Analytics Service]
+        Storage[Cloud Storage]
+    end
+    
+    GameState <--> Auth
+    LearningProgress --> Analytics
+    AssistantTrigger --> Analytics
+    SaveSystem <--> Storage
+    PlayerHistory <--> Storage
