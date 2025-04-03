@@ -164,26 +164,171 @@ export function createPlaceholderAssets(scene) {
   playerGraphics.fillCircle(16, 16, 16);
   playerGraphics.generateTexture('player', 32, 32);
   
-  // Create a simple player spritesheet
+  // Create a more complete player spritesheet
   const sheetGraphics = scene.make.graphics({ x: 0, y: 0, add: false });
-  // Frame 0-3: Idle
+  
+  // Define colors
+  const colors = {
+    body: 0x3498db,    // Blue
+    face: 0xfff6e6,    // Light skin tone
+    hair: 0x8b4513,    // Brown
+    shirt: 0x27ae60,   // Green
+    pants: 0x34495e,   // Dark blue
+    outline: 0x2c3e50  // Dark outline
+  };
+  
+  // Helper function to create character frame
+  const createCharacterFrame = (x, y, direction, frame) => {
+    // Body base - 32x32 rectangle
+    sheetGraphics.fillStyle(colors.outline);
+    sheetGraphics.fillRect(x, y, 32, 32);
+    sheetGraphics.fillStyle(colors.body);
+    sheetGraphics.fillRect(x + 1, y + 1, 30, 30);
+    
+    // Face
+    sheetGraphics.fillStyle(colors.face);
+    
+    if (direction === 'down') {
+      // Front-facing character
+      sheetGraphics.fillRect(x + 10, y + 6, 12, 12);
+      
+      // Eyes
+      sheetGraphics.fillStyle(colors.outline);
+      sheetGraphics.fillRect(x + 13, y + 10, 2, 2);
+      sheetGraphics.fillRect(x + 17, y + 10, 2, 2);
+      
+      // Mouth
+      const mouthOpen = frame % 4 === 2;
+      if (mouthOpen) {
+        sheetGraphics.fillRect(x + 14, y + 14, 4, 2);
+      } else {
+        sheetGraphics.fillRect(x + 14, y + 15, 4, 1);
+      }
+    } else if (direction === 'up') {
+      // Back-facing character
+      sheetGraphics.fillRect(x + 10, y + 6, 12, 12);
+      
+      // Hair from back
+      sheetGraphics.fillStyle(colors.hair);
+      sheetGraphics.fillRect(x + 10, y + 6, 12, 6);
+    } else if (direction === 'left') {
+      // Left-facing character
+      sheetGraphics.fillRect(x + 8, y + 6, 10, 12);
+      
+      // Left eye
+      sheetGraphics.fillStyle(colors.outline);
+      sheetGraphics.fillRect(x + 10, y + 10, 2, 2);
+    } else if (direction === 'right') {
+      // Right-facing character
+      sheetGraphics.fillRect(x + 14, y + 6, 10, 12);
+      
+      // Right eye
+      sheetGraphics.fillStyle(colors.outline);
+      sheetGraphics.fillRect(x + 20, y + 10, 2, 2);
+    }
+    
+    // Body
+    sheetGraphics.fillStyle(colors.shirt);
+    if (direction === 'down' || direction === 'up') {
+      sheetGraphics.fillRect(x + 8, y + 18, 16, 8);
+    } else if (direction === 'left') {
+      sheetGraphics.fillRect(x + 6, y + 18, 12, 8);
+    } else if (direction === 'right') {
+      sheetGraphics.fillRect(x + 14, y + 18, 12, 8);
+    }
+    
+    // Legs
+    sheetGraphics.fillStyle(colors.pants);
+    if (direction === 'down' || direction === 'up') {
+      // Walking animation for legs
+      const offset = frame % 2 === 0 ? 0 : 2;
+      sheetGraphics.fillRect(x + 10, y + 26, 4, 6);
+      sheetGraphics.fillRect(x + 18, y + 26, 4, 6);
+      
+      if (frame % 4 >= 2) {
+        // Left leg forward, right leg back
+        sheetGraphics.fillRect(x + 10, y + 26, 4, 6 - offset);
+        sheetGraphics.fillRect(x + 18, y + 26, 4, 6 + offset);
+      } else {
+        // Right leg forward, left leg back
+        sheetGraphics.fillRect(x + 10, y + 26, 4, 6 + offset);
+        sheetGraphics.fillRect(x + 18, y + 26, 4, 6 - offset);
+      }
+    } else if (direction === 'left') {
+      const offset = frame % 2 === 0 ? 0 : 2;
+      sheetGraphics.fillRect(x + 8, y + 26, 4, 6 + (frame % 4 >= 2 ? offset : 0));
+      sheetGraphics.fillRect(x + 14, y + 26, 4, 6 + (frame % 4 < 2 ? offset : 0));
+    } else if (direction === 'right') {
+      const offset = frame % 2 === 0 ? 0 : 2;
+      sheetGraphics.fillRect(x + 14, y + 26, 4, 6 + (frame % 4 >= 2 ? offset : 0));
+      sheetGraphics.fillRect(x + 20, y + 26, 4, 6 + (frame % 4 < 2 ? offset : 0));
+    }
+    
+    // Arms
+    sheetGraphics.fillStyle(colors.shirt);
+    if (direction === 'down') {
+      // Walking animation for arms
+      const armOffset = Math.sin(frame * Math.PI / 2) * 2;
+      sheetGraphics.fillRect(x + 4, y + 18, 4, 6 + armOffset);
+      sheetGraphics.fillRect(x + 24, y + 18, 4, 6 - armOffset);
+    } else if (direction === 'up') {
+      // Walking animation for arms
+      const armOffset = Math.sin(frame * Math.PI / 2) * 2;
+      sheetGraphics.fillRect(x + 4, y + 18, 4, 6 + armOffset);
+      sheetGraphics.fillRect(x + 24, y + 18, 4, 6 - armOffset);
+    } else if (direction === 'left') {
+      sheetGraphics.fillRect(x + 4, y + 18, 4, 6);
+    } else if (direction === 'right') {
+      sheetGraphics.fillRect(x + 24, y + 18, 4, 6);
+    }
+  };
+  
+  // Create all frames for the player sprite sheet
+  
+  // Idle animations (frames 0-15)
+  // Down idle (0-3)
   for (let i = 0; i < 4; i++) {
-    sheetGraphics.fillStyle(0x3498db);
-    sheetGraphics.fillRect(i * 32, 0, 32, 32);
-    sheetGraphics.fillStyle(0xffffff);
-    sheetGraphics.fillCircle(i * 32 + 16, 16, 10 + Math.sin(i * 2) * 2);
+    createCharacterFrame(i * 32, 0, 'down', i);
   }
-  // Frame 4-9: Walk
-  for (let i = 0; i < 6; i++) {
-    sheetGraphics.fillStyle(0x3498db);
-    sheetGraphics.fillRect(i * 32 + 128, 0, 32, 32);
-    sheetGraphics.fillStyle(0xffffff);
-    sheetGraphics.fillCircle(i * 32 + 128 + 16, 16, 10);
-    // Add walking animation
-    const offset = Math.sin(i * Math.PI / 3) * 4;
-    sheetGraphics.fillRect(i * 32 + 128 + 12, 20 + offset, 8, 12);
+  
+  // Up idle (4-7)
+  for (let i = 0; i < 4; i++) {
+    createCharacterFrame(i * 32, 32, 'up', i);
   }
-  sheetGraphics.generateTexture('playerSheet', 320, 32);
+  
+  // Left idle (8-11)
+  for (let i = 0; i < 4; i++) {
+    createCharacterFrame(i * 32, 64, 'left', i);
+  }
+  
+  // Right idle (12-15)
+  for (let i = 0; i < 4; i++) {
+    createCharacterFrame(i * 32, 96, 'right', i);
+  }
+  
+  // Walk animations (frames 16-47)
+  // Down walk (16-23)
+  for (let i = 0; i < 8; i++) {
+    createCharacterFrame(i * 32, 128, 'down', i);
+  }
+  
+  // Up walk (24-31)
+  for (let i = 0; i < 8; i++) {
+    createCharacterFrame(i * 32, 160, 'up', i);
+  }
+  
+  // Left walk (32-39)
+  for (let i = 0; i < 8; i++) {
+    createCharacterFrame(i * 32, 192, 'left', i);
+  }
+  
+  // Right walk (40-47)
+  for (let i = 0; i < 8; i++) {
+    createCharacterFrame(i * 32, 224, 'right', i);
+  }
+  
+  // Generate the sprite sheet texture
+  sheetGraphics.generateTexture('playerSheet', 256, 256);
   
   console.log('Created placeholder assets');
 }
