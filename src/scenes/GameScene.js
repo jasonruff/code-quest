@@ -1,6 +1,9 @@
 import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config/gameConfig';
 import Player from '../entities/Player';
+import TilemapManager from '../utils/tilemapManager';
+import DialogBox from '../components/DialogBox';
+import InteractiveObject from '../entities/InteractiveObject';
 
 /**
  * Main game scene
@@ -11,91 +14,160 @@ class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' });
     this.player = null;
     this.cursors = null;
-    this.map = null;
-    this.backgroundLayer = null;
-    this.foregroundLayer = null;
-    this.collisionLayer = null;
-    this.obstacles = null;
+    this.tilemapManager = null;
+    this.dialogBox = null;
+    this.interactiveObjects = [];
+    this.nearbyInteractiveObject = null;
+    this.interactionIndicator = null;
+    this.interactionEnabled = true;
   }
 
   create() {
+    // Store game config in registry for access from other entities
+    this.registry.set('GAME_CONFIG', GAME_CONFIG);
+    
+    // Initialize the tilemap manager
+    this.tilemapManager = new TilemapManager(this);
+    
+    // Create the world
     this.createWorld();
+    
+    // Create the player
     this.createPlayer();
-    this.createObstacles();
+    
+    // Create UI elements
+    this.createUI();
+    
+    // Setup camera
     this.setupCamera();
+    
+    // Setup input
     this.setupInput();
+    
+    // Setup collisions
     this.setupCollisions();
+    
+    // Setup interaction detection
+    this.setupInteractionDetection();
+    
+    // Play background music
+    this.playBackgroundMusic();
     
     console.log('GameScene: Main game started');
   }
 
-  update() {
+  update(time, delta) {
     // Update player if it exists
     if (this.player) {
       this.player.update(this.cursors);
     }
+    
+    // Check for nearby interactive objects
+    this.checkNearbyInteractiveObjects();
+    
+    // Update dialog box if visible
+    if (this.dialogBox && this.dialogBox.isVisible()) {
+      this.dialogBox.update();
+    }
   }
 
   createWorld() {
-    // Create a simple placeholder background
-    this.add.image(0, 0, 'background')
-      .setOrigin(0, 0)
-      .setDisplaySize(
-        GAME_CONFIG.width, 
-        GAME_CONFIG.height
+    // Create the Command Center level
+    this.createCommandCenterLevel();
+  }
+  
+  createCommandCenterLevel() {
+    // Load the command center tilemap
+    this.tilemapManager.loadTilemap('command-center', {
+      tilesets: [
+        { name: 'sci-fi-tileset', key: 'sci-fi-tileset' }
+      ],
+      layers: ['floor', 'walls', 'objects'],
+      collisionLayers: ['walls', 'objects']
+    });
+    
+    // Set world bounds based on the tilemap
+    const mapWidth = this.tilemapManager.map.widthInPixels;
+    const mapHeight = this.tilemapManager.map.heightInPixels;
+    
+    this.physics.world.setBounds(0, 0, mapWidth, mapHeight);
+    
+    // Create interactive objects from the tilemap
+    this.createInteractiveObjects();
+  }
+  
+  createInteractiveObjects() {
+    // Get interactive objects from the tilemap
+    const interactiveLayer = this.tilemapManager.map.getObjectLayer('interactive');
+    
+    if (!interactiveLayer) return;
+    
+    // Create an interactive object for each object in the layer
+    interactiveLayer.objects.forEach(object => {
+      const { x, y, width, height, name, type, properties } = object;
+      
+      // Convert properties array to object
+      const props = {};
+      if (properties && properties.length > 0) {
+        properties.forEach(prop => {
+          props[prop.name] = prop.value;
+        });
+      }
+      
+      // Create interactive object
+      const interactiveObj = new InteractiveObject(
+        this,
+        x + width / 2,
+        y + height / 2,
+        width,
+        height,
+        {
+          name,
+          type,
+          properties: props
+        }
       );
-    
-    // Set up world boundaries
-    this.physics.world.setBounds(
-      0, 0, 
-      GAME_CONFIG.width, 
-      GAME_CONFIG.height
-    );
-    
-    // In a real implementation, you would load a tilemap here:
-    // this.map = this.make.tilemap({ key: 'level1' });
-    // const tileset = this.map.addTilesetImage('tileset');
-    // this.backgroundLayer = this.map.createLayer('background', tileset);
-    // this.foregroundLayer = this.map.createLayer('foreground', tileset);
-    // this.collisionLayer = this.map.createLayer('collision', tileset);
-    // this.collisionLayer.setCollisionByProperty({ collides: true });
+      
+      // Add to interactive objects array
+      this.interactiveObjects.push(interactiveObj);
+    });
   }
 
   createPlayer() {
-    // Get player starting position from config
-    const { x, y } = GAME_CONFIG.player.startPosition;
+    // Get player spawn location from tilemap
+    let spawnPosition = this.tilemapManager.getPlayerSpawnPoint();
     
-    // Create player instance using our Player class
-    this.player = new Player(this, x, y);
+    // Fall back to config values if no spawn point found
+    if (!spawnPosition) {
+      spawnPosition = GAME_CONFIG.player.startPosition;
+    }
+    
+    // Create player instance
+    this.player = new Player(this, spawnPosition.x, spawnPosition.y);
+    
+    // Create interaction indicator above player
+    this.createInteractionIndicator();
   }
   
-  createObstacles() {
-    // Create a group for obstacles
-    this.obstacles = this.physics.add.group({
-      immovable: true
-    });
-    
-    // Add some sample obstacles
-    const obstaclePositions = [
-      { x: 200, y: 200, width: 50, height: 50 },
-      { x: 500, y: 300, width: 100, height: 40 },
-      { x: 300, y: 400, width: 80, height: 60 }
-    ];
-    
-    obstaclePositions.forEach(pos => {
-      // Create rectangle obstacle
-      const obstacle = this.add.rectangle(
-        pos.x, pos.y, 
-        pos.width, pos.height, 
-        0x00aa00, 0.7
-      );
-      
-      // Add obstacle to physics
-      this.physics.add.existing(obstacle, true); // true = static body
-      
-      // Add to obstacles group
-      this.obstacles.add(obstacle);
-    });
+  createInteractionIndicator() {
+    // Create an indicator that appears when near interactive objects
+    this.interactionIndicator = this.add.text(0, 0, 'Press SPACE to interact', {
+      fontFamily: 'Arial',
+      fontSize: '12px',
+      color: '#ffffff',
+      backgroundColor: '#00000080',
+      padding: {
+        x: 4,
+        y: 2
+      }
+    })
+      .setOrigin(0.5, 1)
+      .setVisible(false);
+  }
+  
+  createUI() {
+    // Create the dialog box
+    this.dialogBox = new DialogBox(this);
   }
 
   setupCamera() {
@@ -104,13 +176,13 @@ class GameScene extends Phaser.Scene {
     this.cameras.main.setZoom(1); // Adjust zoom as needed
     
     // Set camera bounds to world bounds
+    const bounds = this.physics.world.bounds;
     this.cameras.main.setBounds(
-      0, 0, 
-      GAME_CONFIG.width, 
-      GAME_CONFIG.height
+      bounds.x, bounds.y, 
+      bounds.width, bounds.height
     );
     
-    // Add camera controls for debugging/testing (can be removed for production)
+    // Add camera controls for debugging/testing
     if (GAME_CONFIG.debug) {
       this.setupCameraControls();
     }
@@ -172,28 +244,147 @@ class GameScene extends Phaser.Scene {
   }
 
   setupCollisions() {
-    // Add collision between player and obstacles
-    if (this.player && this.obstacles) {
-      this.physics.add.collider(this.player, this.obstacles);
+    // Set up collisions between player and tilemap
+    if (this.player && this.tilemapManager) {
+      this.tilemapManager.setupCollisions(this.player);
+    }
+  }
+  
+  setupInteractionDetection() {
+    // Add an overlap check between player and interactive objects
+    this.interactiveObjects.forEach(obj => {
+      this.physics.add.overlap(this.player, obj, () => {
+        // Set this object as the nearby interactive object
+        if (this.nearbyInteractiveObject !== obj) {
+          // Clear highlight on previous object
+          if (this.nearbyInteractiveObject) {
+            this.nearbyInteractiveObject.setHighlight(false);
+          }
+          
+          // Set new nearby object and highlight it
+          this.nearbyInteractiveObject = obj;
+          obj.setHighlight(true);
+          
+          // Show interaction indicator
+          this.updateInteractionIndicator(true);
+        }
+      });
+    });
+  }
+  
+  checkNearbyInteractiveObjects() {
+    if (!this.player || !this.interactiveObjects.length) return;
+    
+    // Check if player is still near the interactive object
+    let isNearAny = false;
+    
+    if (this.nearbyInteractiveObject) {
+      const obj = this.nearbyInteractiveObject;
+      const distance = Phaser.Math.Distance.Between(
+        this.player.x, this.player.y,
+        obj.x, obj.y
+      );
+      
+      // Check if player is still within interaction distance
+      isNearAny = distance < GAME_CONFIG.player.interactionDistance;
+      
+      // Clear highlight if no longer near
+      if (!isNearAny) {
+        this.nearbyInteractiveObject.setHighlight(false);
+        this.nearbyInteractiveObject = null;
+      }
     }
     
-    // If using a tilemap with collision layer:
-    // if (this.player && this.collisionLayer) {
-    //   this.physics.add.collider(this.player, this.collisionLayer);
-    // }
+    // Update interaction indicator
+    this.updateInteractionIndicator(isNearAny);
+  }
+  
+  updateInteractionIndicator(show) {
+    if (!this.interactionIndicator || !this.player) return;
+    
+    // Show/hide the indicator
+    this.interactionIndicator.setVisible(show && this.interactionEnabled);
+    
+    // Update position above player
+    if (show && this.interactionEnabled) {
+      this.interactionIndicator.setPosition(
+        this.player.x,
+        this.player.y - 32
+      );
+    }
+  }
+  
+  playBackgroundMusic() {
+    // Play background music if available
+    if (this.sound.get('bgMusic')) {
+      this.sound.play('bgMusic', {
+        loop: true,
+        volume: 0.5
+      });
+    }
   }
 
   handleInteraction() {
-    if (!this.player) return;
+    // Check if interaction is enabled and player exists
+    if (!this.interactionEnabled || !this.player) return;
     
-    // Get the interaction target from the player
-    const interactTarget = this.player.interact();
+    // Check if there's a nearby interactive object
+    if (this.nearbyInteractiveObject) {
+      // Get interaction result
+      const result = this.nearbyInteractiveObject.interact();
+      
+      if (result) {
+        // Play interaction sound
+        this.sound.play('sfxInteract', { volume: 0.5 });
+        
+        // Show dialog for the interaction
+        this.showInteractionDialog(result);
+      }
+    } else {
+      // If no nearby object, check for an object in front of the player
+      const interactTarget = this.player.interact();
+      
+      console.log('Interacting at position:', interactTarget);
+      
+      // Create a visual feedback effect
+      this.createInteractionFeedback(interactTarget.x, interactTarget.y);
+    }
+  }
+  
+  showInteractionDialog(interactionResult) {
+    // Disable interaction while dialog is shown
+    this.interactionEnabled = false;
+    this.updateInteractionIndicator(false);
     
-    console.log('Interacting at position:', interactTarget);
+    // Get speaker name based on object type
+    let speaker = '';
+    switch (interactionResult.type) {
+      case 'computer':
+        speaker = 'Computer Terminal';
+        break;
+      case 'terminal':
+        speaker = 'System Interface';
+        break;
+      case 'screen':
+        speaker = 'Display Screen';
+        break;
+      case 'door':
+        speaker = 'Door Control';
+        break;
+      default:
+        speaker = interactionResult.name;
+    }
     
-    // Here you would check for interactive objects at the interaction position
-    // For now, we'll just create a visual feedback
-    this.createInteractionFeedback(interactTarget.x, interactTarget.y);
+    // Show dialog with the interaction message
+    this.dialogBox.show(
+      interactionResult.message,
+      speaker,
+      () => {
+        // Re-enable interaction after dialog is closed
+        this.interactionEnabled = true;
+        this.updateInteractionIndicator(this.nearbyInteractiveObject !== null);
+      }
+    );
   }
   
   createInteractionFeedback(x, y) {

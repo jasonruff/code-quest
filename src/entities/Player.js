@@ -193,7 +193,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
    */
   interact() {
     const { direction } = this.movementState;
-    const interactDistance = 32; // Distance in front of player to check for interactions
+    const interactDistance = this.scene.registry.get('GAME_CONFIG')?.player?.interactionDistance || 32;
     
     // Calculate the position to check based on player direction
     let checkX = this.x;
@@ -214,8 +214,17 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         break;
     }
     
-    // Here we would check for interactive objects at the checkX, checkY position
-    // For now, we'll just return the position for debugging
+    // Check if the scene has a tilemap manager to check for interactive objects
+    if (this.scene.tilemapManager) {
+      const interactiveObject = this.scene.tilemapManager.getInteractiveObjectAt(checkX, checkY);
+      
+      if (interactiveObject) {
+        // Return the interaction result
+        return this.scene.tilemapManager.interactWith(interactiveObject);
+      }
+    }
+    
+    // If no interactive object found, return the position for visual feedback
     return { x: checkX, y: checkY };
   }
   

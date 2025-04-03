@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import TilesetGenerator from '../utils/tilesetGenerator';
 
 /**
  * Preload scene - handles loading all game assets
@@ -10,21 +11,31 @@ class PreloadScene extends Phaser.Scene {
     this.loadingText = null;
     this.progressBar = null;
     this.progressBarFill = null;
+    this.tilesetGenerator = null;
   }
 
   preload() {
     this.createLoadingUI();
     this.setupLoadingEvents();
     
+    // Create tileset generator
+    this.tilesetGenerator = new TilesetGenerator(this);
+    
     // Load all game assets here
     this.loadImages();
     this.loadSpritesheets();
     this.loadAudio();
     this.loadTilemaps();
+    this.loadFonts();
   }
 
   create() {
     console.log('PreloadScene: All assets loaded');
+    
+    // Generate placeholder tilesets if needed
+    this.generatePlaceholderAssets();
+    
+    // Start the game scene
     this.scene.start('GameScene');
   }
 
@@ -96,11 +107,49 @@ class PreloadScene extends Phaser.Scene {
     // Load audio files
     this.load.audio('bgMusic', 'assets/audio/background-music-placeholder.mp3');
     this.load.audio('sfxButton', 'assets/audio/button-click-placeholder.mp3');
+    this.load.audio('sfxInteract', 'assets/audio/interact-placeholder.mp3');
   }
 
   loadTilemaps() {
     // Load tilemaps
     this.load.tilemapTiledJSON('level1', 'assets/tilemaps/level1-placeholder.json');
+    this.load.tilemapTiledJSON('command-center', 'assets/tilemaps/command-center.json');
+  }
+  
+  loadFonts() {
+    // Note: Custom fonts should be loaded via CSS
+    // This method is for preloading font textures if needed
+  }
+  
+  /**
+   * Generate placeholder assets for development
+   */
+  generatePlaceholderAssets() {
+    // Generate sci-fi tileset
+    this.tilesetGenerator.generateSciFiTileset('sci-fi-tileset', 32, 10, 10);
+    
+    // Create sound effects for interactions
+    if (!this.cache.audio.exists('sfxInteract')) {
+      this.createPlaceholderSounds();
+    }
+  }
+  
+  /**
+   * Create placeholder sound effects
+   */
+  createPlaceholderSounds() {
+    // Create a sound effect for interactions
+    const audioContext = this.sound.context;
+    const buffer = audioContext.createBuffer(1, 2048, audioContext.sampleRate);
+    const channel = buffer.getChannelData(0);
+    
+    // Generate a simple beep sound
+    for (let i = 0; i < 2048; i++) {
+      channel[i] = Math.sin(i * 0.05) * (1 - i / 2048);
+    }
+    
+    // Add the buffer to the cache
+    this.cache.audio.add('sfxInteract', buffer);
   }
 }
 

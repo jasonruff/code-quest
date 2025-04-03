@@ -65,7 +65,7 @@ CodeQuest is an educational game that teaches programming concepts through inter
 
 - ✅ US-001: Basic Game Engine Setup
 - ✅ US-002: Player Character and Movement
-- ⬜ US-003: Game World Environment
+- ✅ US-003: Game World Environment
 - ⬜ US-004: Game State Management
 - ⬜ US-005: Basic Code Editor
 - ⬜ US-008: Byte Character Design

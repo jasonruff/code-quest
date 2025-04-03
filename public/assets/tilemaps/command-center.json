@@ -1,0 +1,514 @@
+{
+  "version": "1.0",
+  "type": "map",
+  "width": 25,
+  "height": 20,
+  "tilewidth": 32,
+  "tileheight": 32,
+  "infinite": false,
+  "orientation": "orthogonal",
+  "renderorder": "right-down",
+  "nextlayerid": 7,
+  "nextobjectid": 15,
+  "properties": {
+    "name": "Command Center"
+  },
+  "tilesets": [
+    {
+      "name": "sci-fi-tileset",
+      "firstgid": 1,
+      "tilewidth": 32,
+      "tileheight": 32,
+      "spacing": 0,
+      "margin": 0,
+      "tilecount": 100,
+      "columns": 10,
+      "image": "../images/sci-fi-tileset.png",
+      "imagewidth": 320,
+      "imageheight": 320,
+      "tiles": [
+        {
+          "id": 0,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 1,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 2,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 3,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 4,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 5,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 6,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 7,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 8,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 9,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 10,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 11,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 12,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 13,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 14,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 15,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 19,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false },
+            { "name": "interactive", "type": "bool", "value": true },
+            { "name": "type", "type": "string", "value": "computer" }
+          ]
+        },
+        {
+          "id": 20,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 21,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 22,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 23,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 24,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false },
+            { "name": "interactive", "type": "bool", "value": true },
+            { "name": "type", "type": "string", "value": "terminal" }
+          ]
+        },
+        {
+          "id": 25,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false },
+            { "name": "interactive", "type": "bool", "value": true },
+            { "name": "type", "type": "string", "value": "screen" }
+          ]
+        },
+        {
+          "id": 29,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 30,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 31,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 32,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 33,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 39,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 40,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 41,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 42,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 43,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 49,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 50,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true },
+            { "name": "interactive", "type": "bool", "value": true },
+            { "name": "type", "type": "string", "value": "door" }
+          ]
+        },
+        {
+          "id": 51,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 52,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": false }
+          ]
+        },
+        {
+          "id": 53,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 59,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 60,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 61,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 62,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        },
+        {
+          "id": 63,
+          "properties": [
+            { "name": "collides", "type": "bool", "value": true }
+          ]
+        }
+      ]
+    }
+  ],
+  "layers": [
+    {
+      "name": "floor",
+      "id": 1,
+      "visible": true,
+      "type": "tilelayer",
+      "opacity": 1,
+      "width": 25,
+      "height": 20,
+      "x": 0,
+      "y": 0,
+      "data": [
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
+        1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
+        1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
+        1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
+        1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
+        1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
+        1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
+        1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
+        1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
+        1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
+        1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
+        1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
+        1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
+        1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
+        1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 51, 52, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 61, 62, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+      ]
+    },
+    {
+      "name": "walls",
+      "id": 2,
+      "visible": true,
+      "type": "tilelayer", 
+      "opacity": 1,
+      "width": 25,
+      "height": 20,
+      "x": 0,
+      "y": 0,
+      "data": [
+        11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23,
+        31, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 0, 0, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 33,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      ]
+    },
+    {
+      "name": "objects",
+      "id": 3,
+      "visible": true,
+      "type": "tilelayer",
+      "opacity": 1,
+      "width": 25,
+      "height": 20,
+      "x": 0,
+      "y": 0,
+      "data": [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 19, 0, 0, 0,
+        0, 0, 0, 20, 20, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 25, 19, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 20, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 19, 24, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 20, 20, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 25, 19, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 51, 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      ]
+    },
+    {
+      "name": "interactive",
+      "id": 4,
+      "visible": true,
+      "type": "objectgroup",
+      "opacity": 1,
+      "objects": [
+        {
+          "id": 1,
+          "name": "computer1",
+          "type": "computer",
+          "x": 672,
+          "y": 96,
+          "width": 32,
+          "height": 32,
+          "properties": [
+            { "name": "message", "type": "string", "value": "Security terminal online. Access code required." }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "computer2",
+          "type": "computer",
+          "x": 160,
+          "y": 160,
+          "width": 32,
+          "height": 32,
+          "properties": [
+            { "name": "message", "type": "string", "value": "System diagnostics running..." }
+          ]
+        },
+        {
+          "id": 3,
+          "name": "terminal1",
+          "type": "terminal",
+          "x": 192,
+          "y": 160,
+          "width": 32,
+          "height": 32,
+          "properties": [
+            { "name": "message", "type": "string", "value": "Welcome to CodeQuest. Initialize the security system to proceed." },
+            { "name": "missionId", "type": "string", "value": "security-initialization" }
+          ]
+        },
+        {
+          "id": 4, 
+          "name": "terminal2",
+          "type": "terminal",
+          "x": 608,
+          "y": 352,
+          "width": 32,
+          "height": 32,
+          "properties": [
+            { "name": "message", "type": "string", "value": "Maintenance terminal. System reports all clear." }
+          ]
+        },
+        {
+          "id": 5,
+          "name": "door",
+          "type": "door",
+          "x": 352,
+          "y": 576,
+          "width": 64,
+          "height": 32,
+          "properties": [
+            { "name": "message", "type": "string", "value": "The door is locked. Complete the security initialization to unlock." },
+            { "name": "locked", "type": "bool", "value": true },
+            { "name": "destination", "type": "string", "value": "corridor" }
+          ]
+        },
+        {
+          "id": 6,
+          "name": "screen1",
+          "type": "screen",
+          "x": 576,
+          "y": 96,
+          "width": 32,
+          "height": 32,
+          "properties": [
+            { "name": "message", "type": "string", "value": "The screen displays various system diagnostics." }
+          ]
+        },
+        {
+          "id": 7,
+          "name": "screen2",
+          "type": "screen",
+          "x": 224,
+          "y": 160,
+          "width": 32,
+          "height": 32,
+          "properties": [
+            { "name": "message", "type": "string", "value": "The screen shows code syntax examples." }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "spawn_points",
+      "id": 5,
+      "visible": true,
+      "type": "objectgroup",
+      "opacity": 1,
+      "objects": [
+        {
+          "id": 8,
+          "name": "player_spawn",
+          "type": "spawn",
+          "x": 384,
+          "y": 512,
+          "width": 32,
+          "height": 32
+        }
+      ]
+    }
+  ]
+}
