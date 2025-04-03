@@ -8,6 +8,7 @@ import GameStateManager from '../utils/GameStateManager';
 import GameStatePanel from '../components/GameStatePanel';
 import MissionTracker from '../components/MissionTracker';
 import PlayerStatusDisplay from '../components/PlayerStatusDisplay';
+import { initCodeChallengeSystem, createCodeChallengeTerminal } from '../utils/codeChallengeSystem';
 
 /**
  * Main game scene
@@ -28,6 +29,9 @@ class GameScene extends Phaser.Scene {
     // Game state manager
     this.stateManager = null;
     
+    // Code challenge system
+    this.codeSystem = null;
+    
     // UI components
     this.gameStatePanel = null;
     this.missionTracker = null;
@@ -43,6 +47,9 @@ class GameScene extends Phaser.Scene {
     
     // Initialize game state manager
     this.initializeGameState();
+    
+    // Initialize code challenge system
+    this.initializeCodeSystem();
     
     // Initialize the tilemap manager
     this.tilemapManager = new TilemapManager(this);
@@ -212,23 +219,58 @@ class GameScene extends Phaser.Scene {
         });
       }
       
-      // Create interactive object
-      const interactiveObj = new InteractiveObject(
-        this,
-        x + width / 2,
-        y + height / 2,
-        width,
-        height,
-        {
-          name,
-          type,
-          properties: props
-        }
-      );
-      
-      // Add to interactive objects array
-      this.interactiveObjects.push(interactiveObj);
+      // Special handling for code terminals
+      if (type === 'code-terminal') {
+        // Create a code challenge terminal
+        const terminal = createCodeChallengeTerminal(this, {
+          x: x + width / 2,
+          y: y + height / 2,
+          width: width,
+          height: height,
+          name: name || 'Code Terminal',
+          message: props.message || 'Press SPACE to start coding challenge',
+          challengeId: props.codeChallenge,
+          missionId: props.missionId,
+          skillType: props.skillType
+        });
+        
+        // Add to interactive objects array
+        this.interactiveObjects.push(terminal);
+      } else {
+        // Create standard interactive object
+        const interactiveObj = new InteractiveObject(
+          this,
+          x + width / 2,
+          y + height / 2,
+          width,
+          height,
+          {
+            name,
+            type,
+            properties: props
+          }
+        );
+        
+        // Add to interactive objects array
+        this.interactiveObjects.push(interactiveObj);
+      }
     });
+    
+    // Create test code challenge terminal if in debug mode
+    if (GAME_CONFIG.debug) {
+      const testTerminal = createCodeChallengeTerminal(this, {
+        x: 200,
+        y: 200,
+        width: 50,
+        height: 50,
+        name: 'Test Terminal',
+        message: 'Press SPACE to start the Security Initialization challenge',
+        challengeId: 'security-initialization',
+        missionId: 'security-initialization'
+      });
+      
+      this.interactiveObjects.push(testTerminal);
+    }
   }
 
   createPlayer() {
@@ -513,8 +555,14 @@ class GameScene extends Phaser.Scene {
         // Process any mission-related interaction
         this.processInteraction(result);
         
-        // Show dialog for the interaction
-        this.showInteractionDialog(result);
+        // Check if this interaction should launch a code challenge
+        if (result.properties && result.properties.codeChallenge) {
+          // Launch code challenge scene with the specified challenge ID
+          this.launchCodeChallenge(result.properties.codeChallenge);
+        } else {
+          // Show dialog for the interaction
+          this.showInteractionDialog(result);
+        }
       }
     } else {
       // If no nearby object, check for an object in front of the player
@@ -546,10 +594,10 @@ class GameScene extends Phaser.Scene {
         this.stateManager.startMission(missionId);
       } else if (currentMission === missionId) {
         // If this is the current mission, handle progression
-        // This would be more complex in a real implementation, checking code submission etc.
+        // For code challenges, completion is handled in the CodeChallengeScene
         
-        // For testing purposes, we simulate completing the mission
-        if (interactionResult.properties.completeMission) {
+        // For non-code challenges or testing, we can still simulate completing the mission directly
+        if (interactionResult.properties.completeMission && !interactionResult.properties.codeChallenge) {
           this.stateManager.completeMission(missionId, {
             experience: 100,
             skills: {
@@ -612,6 +660,50 @@ class GameScene extends Phaser.Scene {
       }
     });
   }
+  
+  /**
+   * Initialize the code challenge system
+   */
+  initializeCodeSystem() {
+    // Create code challenge system and store reference
+    this.codeSystem = initCodeChallengeSystem(this, this.stateManager);
+    
+    // Listen for challenge completion events
+    this.events.on('challenge-completed', this.handleChallengeCompleted, this);
+  }
+  
+  /**
+   * Handle when a challenge is completed
+   * @param {Object} data - Challenge completion data
+   */
+  handleChallengeCompleted(data) {
+    console.log(`Challenge completed: ${data.challengeId}`);
+    
+    // You could trigger mission progression, unlocks, or other game events here
+  }
+  
+  /**
+   * Launch the code challenge scene with the specified challenge ID
+   * @param {String} challengeId - ID of the challenge to launch
+   */
+  launchCodeChallenge(challengeId) {
+    if (this.codeSystem) {
+      // Use the code system to launch the challenge
+      this.codeSystem.launchChallenge(challengeId);
+    } else {
+      // Fallback to direct scene management if code system isn't initialized
+      this.scene.pause();
+      
+      this.scene.launch('CodeChallengeScene', {
+        challengeId: challengeId,
+        previousScene: 'GameScene',
+        stateManager: this.stateManager
+      });
+    }
+    
+    // Disable interaction while in the code challenge
+    this.interactionEnabled = false;
+  }
   /**
    * Cleanup resources when shutting down the scene
    */
@@ -637,6 +729,9 @@ class GameScene extends Phaser.Scene {
     if (this.dialogBox) {
       this.dialogBox.destroy();
     }
+    
+    // Cleanup code challenge event listeners
+    this.events.off('challenge-completed', this.handleChallengeCompleted, this);
     
     // Cleanup state manager
     if (this.stateManager) {

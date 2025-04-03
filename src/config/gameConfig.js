@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import BootScene from '../scenes/BootScene';
 import PreloadScene from '../scenes/PreloadScene';
 import GameScene from '../scenes/GameScene';
+import CodeChallengeScene from '../scenes/CodeChallengeScene';
 
 /**
  * Game constants and settings
@@ -74,7 +75,7 @@ export function initGame() {
         debug: GAME_CONFIG.debug && GAME_CONFIG.physics.showBodies
       }
     },
-    scene: [BootScene, PreloadScene, GameScene]
+    scene: [BootScene, PreloadScene, GameScene, CodeChallengeScene]
   };
 
   return new Phaser.Game(config);

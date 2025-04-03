@@ -13,6 +13,14 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@codemirror/autocomplete": "^6.9.1",
+    "@codemirror/commands": "^6.2.4",
+    "@codemirror/state": "^6.2.1",
+    "@codemirror/theme-one-dark": "^6.1.2",
+    "@codemirror/view": "^6.18.1",
+    "@codemirror/lang-javascript": "^6.2.1",
+    "@lezer/highlight": "^1.1.6",
+    "acorn": "^8.10.0",
     "phaser": "^3.60.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

@@ -59,6 +59,9 @@ class InteractiveObject extends Phaser.GameObjects.Zone {
       case 'screen':
         color = 0x00ff00; // Green
         break;
+      case 'code-terminal':
+        color = 0x7c3aed; // Purple
+        break;
       default:
         color = 0xffffff; // White
     }
