@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import ReactDOM from 'react-dom/client';
 import React from 'react';
-import CodeEditorComponent from './CodeEditorComponent';
+import CodeEditorComponent from './CodeEditorComponent.jsx';
 
 /**
  * Bridge class to connect Phaser scene with React-based code editor

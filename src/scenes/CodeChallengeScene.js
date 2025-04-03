@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import CodeEditorBridge from '../components/CodeEditorBridge';
+import CodeEditorBridge from '../components/CodeEditorBridge.jsx';
 import CodeChallengeManager from '../utils/CodeChallengeManager';
 import GameStateManager from '../utils/GameStateManager';
 

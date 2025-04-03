@@ -172,6 +172,9 @@ export function initCodeChallengeSystem(scene, stateManager) {
  * @returns {InteractiveObject} The created interactive object
  */
 export function createCodeChallengeTerminal(scene, options) {
+  // InteractiveObject is already imported at the top level
+  // No need to import or require it again here
+  
   // Default options
   const defaultOptions = {
     x: 400,

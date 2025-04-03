@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeQuest - Fallback Mode</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.ico">
+  <link rel="stylesheet" href="/src/assets/styles/main.css">
+  
+  <!-- CDN Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- External dependencies from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  
+  <!-- CodeMirror from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.12/lib/codemirror.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.12/mode/javascript/javascript.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.12/lib/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.12/theme/monokai.min.css">
+  
+  <style>
+    #root {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .fallback-container {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    .card {
+      margin-bottom: 20px;
+      background-color: #1e1e1e;
+      border: 1px solid #333;
+    }
+    
+    .btn-primary {
+      background-color: #238636;
+      border-color: #238636;
+    }
+    
+    .btn-primary:hover {
+      background-color: #2ea043;
+      border-color: #2ea043;
+    }
+    
+    .editor-container {
+      height: 300px;
+      text-align: left;
+      margin-bottom: 20px;
+    }
+    
+    /* Ensure CodeMirror fills container */
+    .CodeMirror {
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="fallback-container">
+      <h1 class="mb-4">CodeQuest - Fallback Mode</h1>
+      
+      <div class="card mb-4">
+        <div class="card-header">
+          Environment Diagnostics
+        </div>
+        <div class="card-body">
+          <p>This page tests if external dependencies are correctly loaded.</p>
+          <div id="diagnostics-output" class="alert alert-primary">
+            Click "Run Diagnostic" to check environment
+          </div>
+          <button id="run-diagnostic" class="btn btn-primary">Run Diagnostic</button>
+        </div>
+      </div>
+      
+      <div class="card mb-4">
+        <div class="card-header">
+          Code Editor Test
+        </div>
+        <div class="card-body">
+          <p>Test if the code editor works:</p>
+          <div id="editor-container" class="editor-container"></div>
+          <button id="run-code" class="btn btn-primary">Run Code</button>
+          <div id="code-output" class="alert alert-light mt-3 text-start">Output will appear here</div>
+        </div>
+      </div>
+      
+      <div class="alert alert-warning">
+        <strong>Note:</strong> This is a fallback page for development and testing. 
+        To run the full game, use <code>npm run dev</code> or <code>npm run build</code>.
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize code editor with CodeMirror
+      const editorContainer = document.getElementById('editor-container');
+      const codeEditor = CodeMirror(editorContainer, {
+        value: `// Write your JavaScript code here
+function greet(name) {
+  return "Hello, " + name + "!";
+}
+
+// Set the result
+const result = greet("CodeQuest");
+console.log(result);`,
+        mode: "javascript",
+        theme: "monokai",
+        lineNumbers: true,
+        tabSize: 2
+      });
+      
+      // Run diagnostic button
+      document.getElementById('run-diagnostic').addEventListener('click', function() {
+        const output = document.getElementById('diagnostics-output');
+        let html = '<ul class="list-group">';
+        
+        // Check React
+        if (typeof React !== 'undefined') {
+          html += `<li class="list-group-item list-group-item-success">React ${React.version} ✅</li>`;
+        } else {
+          html += '<li class="list-group-item list-group-item-danger">React is not loaded ❌</li>';
+        }
+        
+        // Check ReactDOM
+        if (typeof ReactDOM !== 'undefined') {
+          html += `<li class="list-group-item list-group-item-success">ReactDOM ${ReactDOM.version} ✅</li>`;
+        } else {
+          html += '<li class="list-group-item list-group-item-danger">ReactDOM is not loaded ❌</li>';
+        }
+        
+        // Check Phaser
+        if (typeof Phaser !== 'undefined') {
+          html += `<li class="list-group-item list-group-item-success">Phaser ${Phaser.VERSION} ✅</li>`;
+        } else {
+          html += '<li class="list-group-item list-group-item-danger">Phaser is not loaded ❌</li>';
+        }
+        
+        // Check CodeMirror
+        if (typeof CodeMirror !== 'undefined') {
+          html += `<li class="list-group-item list-group-item-success">CodeMirror ${CodeMirror.version} ✅</li>`;
+        } else {
+          html += '<li class="list-group-item list-group-item-danger">CodeMirror is not loaded ❌</li>';
+        }
+        
+        html += '</ul>';
+        output.innerHTML = html;
+      });
+      
+      // Run code button
+      document.getElementById('run-code').addEventListener('click', function() {
+        const code = codeEditor.getValue();
+        const output = document.getElementById('code-output');
+        
+        // Store original console.log
+        const originalLog = console.log;
+        const logs = [];
+        
+        // Override console.log to capture output
+        console.log = function() {
+          logs.push(Array.from(arguments).join(' '));
+          originalLog.apply(console, arguments);
+        };
+        
+        try {
+          // Execute the code
+          const result = new Function(code)();
+          
+          // Format output
+          let outputHtml = '';
+          if (logs.length > 0) {
+            outputHtml += '<p><strong>Console output:</strong></p>';
+            outputHtml += '<pre>' + logs.join('\n') + '</pre>';
+          }
+          
+          if (result !== undefined) {
+            outputHtml += '<p><strong>Result:</strong></p>';
+            outputHtml += '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+          }
+          
+          output.innerHTML = outputHtml || 'Code executed successfully (no output)';
+          output.className = 'alert alert-success mt-3 text-start';
+        } catch (error) {
+          output.innerHTML = `<p><strong>Error:</strong></p><pre>${error.message}</pre>`;
+          output.className = 'alert alert-danger mt-3 text-start';
+        } finally {
+          // Restore original console.log
+          console.log = originalLog;
+        }
+      });
+      
+      // Run diagnostic automatically
+      document.getElementById('run-diagnostic').click();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeQuest Test</title>
+  <style>
+    body { 
+      background-color: #121212; 
+      color: white; 
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+    .test-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem;
+      background-color: #1e1e1e;
+      border-radius: 8px;
+    }
+    button {
+      background-color: #238636;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    #output {
+      margin-top: 1rem;
+      text-align: left;
+      background-color: #2d2d2d;
+      padding: 1rem;
+      border-radius: 4px;
+      min-height: 100px;
+    }
+    .success { color: #33cc33; }
+    .error { color: #ff6666; }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>CodeQuest Environment Test</h1>
+    <p>This page tests if the environment is correctly set up with the required dependencies.</p>
+    
+    <button id="testButton">Run Test</button>
+    
+    <div id="output">Click "Run Test" to check environment...</div>
+  </div>
+
+  <script>
+    document.getElementById('testButton').addEventListener('click', async function() {
+      const output = document.getElementById('output');
+      output.innerHTML = 'Running tests...<br>';
+      
+      try {
+        // Test if ES modules are supported
+        output.innerHTML += '✅ <span class="success">ES modules are supported</span><br>';
+        
+        // Test accessing window object
+        if (window) {
+          output.innerHTML += '✅ <span class="success">Window object is accessible</span><br>';
+        }
+        
+        // Check browser environment
+        output.innerHTML += `✅ <span class="success">Browser: ${navigator.userAgent}</span><br>`;
+        
+        // Test dynamic imports
+        try {
+          const moduleTest = await import('./src/main.jsx');
+          output.innerHTML += '✅ <span class="success">Dynamic imports work</span><br>';
+        } catch (e) {
+          output.innerHTML += `❌ <span class="error">Dynamic imports failed: ${e.message}</span><br>`;
+        }
+        
+        // Test Function constructor (used by the code editor sandbox)
+        try {
+          const testFn = new Function('return "test";');
+          const result = testFn();
+          if (result === 'test') {
+            output.innerHTML += '✅ <span class="success">Function constructor works</span><br>';
+          }
+        } catch (e) {
+          output.innerHTML += `❌ <span class="error">Function constructor failed: ${e.message}</span><br>`;
+        }
+        
+        // Summary
+        output.innerHTML += '<br><strong>Environment test complete!</strong><br>';
+        
+      } catch (error) {
+        output.innerHTML += `❌ <span class="error">Test failed: ${error.message}</span><br>`;
+      }
+    });
+  </script>
+</body>
+</html>
