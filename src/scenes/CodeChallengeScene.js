@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import CodeEditor from '../components/CodeEditor';
+import CodeEditorBridge from '../components/CodeEditorBridge';
 import CodeChallengeManager from '../utils/CodeChallengeManager';
 import GameStateManager from '../utils/GameStateManager';
 
@@ -190,13 +190,11 @@ class CodeChallengeScene extends Phaser.Scene {
     const editorWidth = panelWidth - 40;
     const editorHeight = panelHeight - 160;
     
-    this.codeEditor = new CodeEditor(this, {
+    this.codeEditor = new CodeEditorBridge(this, {
       x: editorX,
       y: editorY,
       width: editorWidth,
-      height: editorHeight,
-      theme: 'dark',
-      fontSize: 14
+      height: editorHeight
     });
   }
   

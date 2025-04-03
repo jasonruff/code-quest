@@ -4,6 +4,7 @@
  */
 import CodeChallengeManager from './CodeChallengeManager';
 import CodeEditor from '../components/CodeEditor';
+import InteractiveObject from '../entities/InteractiveObject';
 
 /**
  * Initialize the code challenge system
@@ -171,8 +172,6 @@ export function initCodeChallengeSystem(scene, stateManager) {
  * @returns {InteractiveObject} The created interactive object
  */
 export function createCodeChallengeTerminal(scene, options) {
-  const InteractiveObject = require('../entities/InteractiveObject').default;
-  
   // Default options
   const defaultOptions = {
     x: 400,

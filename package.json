@@ -14,15 +14,18 @@
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.9.1",
+    "@codemirror/basic-setup": "^0.20.0",
     "@codemirror/commands": "^6.2.4",
-    "@codemirror/state": "^6.2.1",
-    "@codemirror/theme-one-dark": "^6.1.2",
-    "@codemirror/view": "^6.18.1",
     "@codemirror/lang-javascript": "^6.2.1",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/theme-one-dark": "^6.1.2",
+    "@codemirror/view": "^6.36.5",
     "@lezer/highlight": "^1.1.6",
     "acorn": "^8.10.0",
+    "bootstrap": "^5.3.0",
     "phaser": "^3.60.0",
     "react": "^18.2.0",
+    "react-bootstrap": "^2.8.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
@@ -31,7 +34,7 @@
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.3.4",
-    "vite": "^4.3.9",
+    "vite": "^4.4.5",
     "vitest": "^0.34.6"
   },
   "repository": {
