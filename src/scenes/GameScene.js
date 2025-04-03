@@ -4,6 +4,10 @@ import Player from '../entities/Player';
 import TilemapManager from '../utils/tilemapManager';
 import DialogBox from '../components/DialogBox';
 import InteractiveObject from '../entities/InteractiveObject';
+import GameStateManager from '../utils/GameStateManager';
+import GameStatePanel from '../components/GameStatePanel';
+import MissionTracker from '../components/MissionTracker';
+import PlayerStatusDisplay from '../components/PlayerStatusDisplay';
 
 /**
  * Main game scene
@@ -20,11 +24,25 @@ class GameScene extends Phaser.Scene {
     this.nearbyInteractiveObject = null;
     this.interactionIndicator = null;
     this.interactionEnabled = true;
+    
+    // Game state manager
+    this.stateManager = null;
+    
+    // UI components
+    this.gameStatePanel = null;
+    this.missionTracker = null;
+    this.playerStatusDisplay = null;
+    
+    // Time tracking
+    this.lastUpdateTime = 0;
   }
 
   create() {
     // Store game config in registry for access from other entities
     this.registry.set('GAME_CONFIG', GAME_CONFIG);
+    
+    // Initialize game state manager
+    this.initializeGameState();
     
     // Initialize the tilemap manager
     this.tilemapManager = new TilemapManager(this);
@@ -53,13 +71,72 @@ class GameScene extends Phaser.Scene {
     // Play background music
     this.playBackgroundMusic();
     
+    // Set initial time for updates
+    this.lastUpdateTime = this.time.now;
+    
     console.log('GameScene: Main game started');
+  }
+  
+  /**
+   * Initialize the game state manager
+   */
+  initializeGameState() {
+    // Create the state manager
+    this.stateManager = new GameStateManager(this);
+    
+    // Initialize the state (this will attempt to load saved state)
+    this.stateManager.init();
+    
+    // Listen for key events to access state panel
+    this.input.keyboard.on('keydown-TAB', this.toggleGameStatePanel, this);
+    
+    // Set up event listeners for transitions
+    this.setupStateTransitionListeners();
+  }
+  
+  /**
+   * Set up listeners for state transitions
+   */
+  setupStateTransitionListeners() {
+    // When a mission is started
+    this.stateManager.events.on('mission-started', (missionId) => {
+      console.log(`Mission started: ${missionId}`);
+      // You could trigger cutscenes, dialog, etc. here
+    });
+    
+    // When a mission is completed
+    this.stateManager.events.on('mission-completed', (data) => {
+      console.log(`Mission completed: ${data.missionId}`);
+      
+      // Show completion dialog
+      this.showMissionCompleteDialog(data.missionId);
+    });
+    
+    // When player levels up
+    this.stateManager.events.on('player-leveled-up', (data) => {
+      console.log(`Level up: ${data.oldLevel} -> ${data.newLevel}`);
+      
+      // Play level up sound if available
+      if (this.sound.get('levelUp')) {
+        this.sound.play('levelUp', { volume: 0.5 });
+      }
+    });
   }
 
   update(time, delta) {
     // Update player if it exists
     if (this.player) {
       this.player.update(this.cursors);
+      
+      // Save player position to state
+      if (this.stateManager && this.player) {
+        this.stateManager.savePlayerPosition(
+          this.player.x,
+          this.player.y,
+          this.player.getDirection(),
+          'command-center' // Current map name
+        );
+      }
     }
     
     // Check for nearby interactive objects
@@ -68,6 +145,27 @@ class GameScene extends Phaser.Scene {
     // Update dialog box if visible
     if (this.dialogBox && this.dialogBox.isVisible()) {
       this.dialogBox.update();
+    }
+    
+    // Update UI components
+    if (this.missionTracker) {
+      this.missionTracker.update(time, delta);
+    }
+    
+    if (this.playerStatusDisplay) {
+      this.playerStatusDisplay.update(time, delta);
+    }
+    
+    if (this.gameStatePanel) {
+      this.gameStatePanel.update(time, delta);
+    }
+    
+    // Update play time in state manager
+    if (this.stateManager) {
+      // Calculate time since last update
+      const timeDelta = time - this.lastUpdateTime;
+      this.stateManager.updatePlayTime(timeDelta);
+      this.lastUpdateTime = time;
     }
   }
 
@@ -168,6 +266,81 @@ class GameScene extends Phaser.Scene {
   createUI() {
     // Create the dialog box
     this.dialogBox = new DialogBox(this);
+    
+    // Create game state panel
+    this.gameStatePanel = new GameStatePanel(this, this.stateManager, {
+      visible: false // Hidden by default, toggle with TAB key
+    });
+    
+    // Create mission tracker
+    this.missionTracker = new MissionTracker(this, this.stateManager, {
+      x: 10,
+      y: 10,
+      width: 300
+    });
+    
+    // Create player status display
+    this.playerStatusDisplay = new PlayerStatusDisplay(this, this.stateManager, {
+      x: this.cameras.main.width - 10,
+      y: 10,
+      width: 200
+    });
+  }
+  
+  /**
+   * Toggle the game state panel
+   */
+  toggleGameStatePanel() {
+    if (this.gameStatePanel) {
+      this.gameStatePanel.toggle();
+    }
+  }
+  
+  /**
+   * Show mission complete dialog
+   * @param {String} missionId - ID of the completed mission
+   */
+  showMissionCompleteDialog(missionId) {
+    // Format mission name
+    const formattedName = this.formatMissionName(missionId);
+    
+    // Show dialog
+    this.dialogBox.show(
+      `Mission Complete: ${formattedName}\n\nYou have successfully completed this mission! Your progress has been saved.`,
+      'Mission System',
+      () => {
+        // Enable interaction after dialog is closed
+        this.interactionEnabled = true;
+      }
+    );
+    
+    // Disable interaction while dialog is shown
+    this.interactionEnabled = false;
+  }
+  
+  /**
+   * Format a mission ID into a readable name
+   * @param {String} missionId - The mission ID
+   * @returns {String} Formatted mission name
+   */
+  formatMissionName(missionId) {
+    if (!missionId) return 'Unknown Mission';
+    
+    // Custom formatting for known missions
+    const missionNames = {
+      'security-initialization': 'Security Initialization',
+      'logic-gates': 'Logic Gates',
+      'variable-declaration': 'Variable Declaration',
+      'function-basics': 'Function Basics',
+      'conditional-statements': 'Conditional Statements',
+      'loops-intro': 'Introduction to Loops'
+    };
+    
+    // Return custom name if available, otherwise format the ID
+    return missionNames[missionId] || missionId
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
   setupCamera() {
@@ -337,6 +510,9 @@ class GameScene extends Phaser.Scene {
         // Play interaction sound
         this.sound.play('sfxInteract', { volume: 0.5 });
         
+        // Process any mission-related interaction
+        this.processInteraction(result);
+        
         // Show dialog for the interaction
         this.showInteractionDialog(result);
       }
@@ -348,6 +524,40 @@ class GameScene extends Phaser.Scene {
       
       // Create a visual feedback effect
       this.createInteractionFeedback(interactTarget.x, interactTarget.y);
+    }
+  }
+  
+  /**
+   * Process interaction for mission progress
+   * @param {Object} interactionResult - The result of the interaction
+   */
+  processInteraction(interactionResult) {
+    if (!this.stateManager || !interactionResult) return;
+    
+    // Check if this interaction has a mission ID
+    if (interactionResult.properties && interactionResult.properties.missionId) {
+      const missionId = interactionResult.properties.missionId;
+      
+      // Get current mission from state
+      const currentMission = this.stateManager.getState('game.currentMission');
+      
+      if (!currentMission) {
+        // If no mission is active, start this one
+        this.stateManager.startMission(missionId);
+      } else if (currentMission === missionId) {
+        // If this is the current mission, handle progression
+        // This would be more complex in a real implementation, checking code submission etc.
+        
+        // For testing purposes, we simulate completing the mission
+        if (interactionResult.properties.completeMission) {
+          this.stateManager.completeMission(missionId, {
+            experience: 100,
+            skills: {
+              [interactionResult.properties.skillType || 'variables']: 1
+            }
+          });
+        }
+      }
     }
   }
   
@@ -401,6 +611,43 @@ class GameScene extends Phaser.Scene {
         circle.destroy();
       }
     });
+  }
+  /**
+   * Cleanup resources when shutting down the scene
+   */
+  shutdown() {
+    // First, save the current state
+    if (this.stateManager) {
+      this.stateManager.saveState();
+    }
+    
+    // Cleanup UI components
+    if (this.gameStatePanel) {
+      this.gameStatePanel.destroy();
+    }
+    
+    if (this.missionTracker) {
+      this.missionTracker.destroy();
+    }
+    
+    if (this.playerStatusDisplay) {
+      this.playerStatusDisplay.destroy();
+    }
+    
+    if (this.dialogBox) {
+      this.dialogBox.destroy();
+    }
+    
+    // Cleanup state manager
+    if (this.stateManager) {
+      this.stateManager.destroy();
+    }
+    
+    // Remove event listeners
+    this.input.keyboard.off('keydown-TAB', this.toggleGameStatePanel, this);
+    
+    // Call parent cleanup
+    super.shutdown();
   }
 }
 
