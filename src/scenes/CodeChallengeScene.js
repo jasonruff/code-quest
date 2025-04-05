@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import CodeEditorBridge from '../components/CodeEditorBridge.jsx';
 import CodeChallengeManager from '../utils/CodeChallengeManager';
 import GameStateManager from '../utils/GameStateManager';
+import ByteAssistant from '../components/ByteAssistant';
+import ByteInteractionUI from '../components/ByteInteractionUI';
 
 /**
  * Code Challenge Scene
@@ -15,6 +17,8 @@ class CodeChallengeScene extends Phaser.Scene {
     this.codeEditor = null;
     this.challengeManager = null;
     this.stateManager = null;
+    this.byteAssistant = null;
+    this.byteInteractionUI = null;
     
     // Current challenge data
     this.currentChallengeId = null;
@@ -33,6 +37,7 @@ class CodeChallengeScene extends Phaser.Scene {
     this.currentChallengeId = data.challengeId || null;
     this.previousScene = data.previousScene || 'GameScene';
     this.stateManagerData = data.stateManager || null;
+    this.externalByteAssistant = data.byteAssistant || null;
   }
   
   create() {
@@ -50,6 +55,9 @@ class CodeChallengeScene extends Phaser.Scene {
     
     // Create UI layout
     this.createUILayout();
+    
+    // Create or reference Byte assistant
+    this.setupByteAssistant();
     
     // Load the challenge if one was provided
     if (this.currentChallengeId) {
@@ -83,6 +91,11 @@ class CodeChallengeScene extends Phaser.Scene {
     const panelHeight = height * 0.8;
     const panelX = (width - panelWidth) / 2;
     const panelY = (height - panelHeight) / 2;
+    
+    // Store these for tracking hint effectiveness later
+    this.lastHint = '';
+    this.lastHintTimestamp = null;
+    this.hintCount = 0;
     
     // Create panel background
     this.challengePanel = this.add.rectangle(
@@ -313,6 +326,11 @@ class CodeChallengeScene extends Phaser.Scene {
     this.events.on('challenge-failed', this.handleChallengeFailed, this);
     this.events.on('code-error', this.handleCodeError, this);
     this.events.on('code-reset', this.handleCodeReset, this);
+    
+    // Byte assistant events
+    if (this.byteAssistant) {
+      this.events.on('byte-click', this.handleByteClick, this);
+    }
   }
   
   /**
@@ -323,6 +341,17 @@ class CodeChallengeScene extends Phaser.Scene {
     const { challengeId, code } = event.detail;
     
     if (this.stateManager && challengeId) {
+      // Calculate time since last hint (if any) for hint effectiveness tracking
+      let hintEffectiveness = null;
+      if (this.lastHintTimestamp) {
+        const timeSinceHint = Date.now() - this.lastHintTimestamp;
+        hintEffectiveness = {
+          timeSinceHint,
+          effectiveHint: timeSinceHint < 120000, // Consider hint effective if completed within 2 minutes
+          hintCount: this.hintCount
+        };
+      }
+      
       // Update game state to mark challenge as completed
       this.stateManager.completeMission(challengeId, {
         experience: 100, // Award experience points
@@ -331,9 +360,15 @@ class CodeChallengeScene extends Phaser.Scene {
         }
       });
       
-      // Save the player's solution
+      // Save the player's solution and hint effectiveness
       this.stateManager.setState(`challenges.${challengeId}.completed`, true);
       this.stateManager.setState(`challenges.${challengeId}.playerSolution`, code);
+      this.stateManager.setState(`challenges.${challengeId}.hints`, this.hintCount);
+      
+      if (hintEffectiveness) {
+        this.stateManager.setState(`challenges.${challengeId}.hintEffectiveness`, hintEffectiveness);
+      }
+      
       this.stateManager.saveState();
       
       // Display success message
@@ -347,7 +382,38 @@ class CodeChallengeScene extends Phaser.Scene {
    */
   handleChallengeSuccess(data) {
     console.log('Challenge success:', data);
-    // Additional UI feedback could be added here
+    
+    // If we have the ByteAssistant with AI integration, use it to provide feedback
+    if (this.byteAssistant && this.currentChallenge) {
+      // Get the current code from the editor
+      const playerCode = this.codeEditor ? this.codeEditor.getCode() : '';
+      
+      // Build game state with success information
+      const gameState = {
+        playerName: this.stateManager.getState('player.name') || 'Player',
+        currentMission: this.currentChallenge.title,
+        challengeId: this.currentChallengeId,
+        challengeDescription: this.currentChallenge.description,
+        learningObjective: this.currentChallenge.skillType || 'coding',
+        playerCode: playerCode,
+        errorMessage: null,
+        previousHint: this.lastHint || null,
+        attemptCount: this.stateManager.getState(`challenges.${this.currentChallengeId}.attempts`) || 1,
+        success: true,
+        requestType: 'success-feedback'
+      };
+      
+      // Use the AI to give personalized feedback on their solution
+      this.byteAssistant.getCodeFeedback(gameState);
+    } else {
+      // Fallback to static message if AI integration isn't available
+      if (this.byteAssistant) {
+        this.byteAssistant.say(
+          "Great job! Your code passed all the tests!", 
+          { mood: 'happy', duration: 3000 }
+        );
+      }
+    }
   }
   
   /**
@@ -356,7 +422,46 @@ class CodeChallengeScene extends Phaser.Scene {
    */
   handleChallengeFailed(data) {
     console.log('Challenge failed:', data);
-    // Additional UI feedback could be added here
+    
+    // If we have the ByteAssistant with AI integration, use it to provide help
+    if (this.byteAssistant && this.currentChallenge) {
+      // Get the current code from the editor
+      const playerCode = this.codeEditor ? this.codeEditor.getCode() : '';
+      const errorMessage = data.error || "Test failure";
+      
+      // Build game state with failure information
+      const gameState = {
+        playerName: this.stateManager.getState('player.name') || 'Player',
+        currentMission: this.currentChallenge.title,
+        challengeId: this.currentChallengeId,
+        challengeDescription: this.currentChallenge.description,
+        learningObjective: this.currentChallenge.skillType || 'coding',
+        playerCode: playerCode,
+        errorMessage: errorMessage,
+        testResults: data.results || null,
+        previousHint: this.lastHint || null,
+        attemptCount: this.stateManager.getState(`challenges.${this.currentChallengeId}.attempts`) || 1,
+        requestType: 'test-failure'
+      };
+      
+      // Use the AI to give personalized help on why tests failed
+      this.byteAssistant.getHint(gameState);
+      
+      // Track this failure for the challenge statistics
+      if (this.stateManager) {
+        const currentAttempts = this.stateManager.getState(`challenges.${this.currentChallengeId}.attempts`) || 0;
+        this.stateManager.setState(`challenges.${this.currentChallengeId}.attempts`, currentAttempts + 1);
+        this.stateManager.saveState();
+      }
+    } else {
+      // Fallback to static message if AI integration isn't available
+      if (this.byteAssistant) {
+        this.byteAssistant.say(
+          "Don't worry! Programming is all about trying different approaches. Check the hints if you need help.", 
+          { mood: 'confused', duration: 5000 }
+        );
+      }
+    }
   }
   
   /**
@@ -365,7 +470,44 @@ class CodeChallengeScene extends Phaser.Scene {
    */
   handleCodeError(data) {
     console.log('Code error:', data);
-    // Additional UI feedback could be added here
+    
+    // If we have the ByteAssistant with AI integration, use it to explain the error
+    if (this.byteAssistant && this.currentChallenge) {
+      // Get the current code from the editor
+      const playerCode = this.codeEditor ? this.codeEditor.getCode() : '';
+      const errorMessage = data.error || "Unknown error";
+      
+      // Build game state with error information
+      const gameState = {
+        playerName: this.stateManager.getState('player.name') || 'Player',
+        currentMission: this.currentChallenge.title,
+        challengeId: this.currentChallengeId,
+        challengeDescription: this.currentChallenge.description,
+        learningObjective: this.currentChallenge.skillType || 'coding',
+        playerCode: playerCode,
+        errorMessage: errorMessage,
+        previousHint: this.lastHint || null,
+        attemptCount: this.stateManager.getState(`challenges.${this.currentChallengeId}.attempts`) || 1
+      };
+      
+      // Use the AI-powered error explanation
+      this.byteAssistant.explainError(gameState);
+      
+      // Track this error for the challenge statistics
+      if (this.stateManager) {
+        const currentAttempts = this.stateManager.getState(`challenges.${this.currentChallengeId}.attempts`) || 0;
+        this.stateManager.setState(`challenges.${this.currentChallengeId}.attempts`, currentAttempts + 1);
+        this.stateManager.saveState();
+      }
+    } else {
+      // Fallback to static message if AI integration isn't available
+      if (this.byteAssistant) {
+        this.byteAssistant.say(
+          "Looks like there's an error in your code. Check your syntax - did you close all brackets and add semicolons where needed?", 
+          { mood: 'thinking', duration: 5000 }
+        );
+      }
+    }
   }
   
   /**
@@ -374,7 +516,14 @@ class CodeChallengeScene extends Phaser.Scene {
    */
   handleCodeReset(data) {
     console.log('Code reset:', data);
-    // Additional UI feedback could be added here
+    
+    // Have Byte comment on the reset
+    if (this.byteAssistant) {
+      this.byteAssistant.say(
+        "Starting fresh with a clean slate! Sometimes that's the best approach.", 
+        { mood: 'excited', duration: 3000 }
+      );
+    }
   }
   
   /**
@@ -593,7 +742,127 @@ class CodeChallengeScene extends Phaser.Scene {
    * @param {Number} delta - Time delta since last update
    */
   update(time, delta) {
-    // Any animation or continuous updates can go here
+    // Update Byte assistant position if the panel size changes
+    if (this.byteAssistant && this.challengePanel) {
+      const panelRight = this.challengePanel.x + this.challengePanel.width;
+      const panelBottom = this.challengePanel.y + this.challengePanel.height;
+      
+      this.byteAssistant.setPosition(
+        panelRight - 70, 
+        panelBottom - 70
+      );
+    }
+  }
+  
+  /**
+   * Setup the Byte assistant and interaction UI
+   */
+  setupByteAssistant() {
+    // If we received an assistant from the game scene, use it
+    if (this.externalByteAssistant) {
+      this.byteAssistant = this.externalByteAssistant;
+      
+      // Make sure it's visible in this scene
+      this.byteAssistant.setVisible(true);
+      
+      // Position appropriately for this scene
+      const { width, height } = this.cameras.main;
+      this.byteAssistant.setPosition(width - 70, height - 70);
+    } else {
+      // Create a new assistant for this scene
+      const { width, height } = this.cameras.main;
+      
+      this.byteAssistant = new ByteAssistant(this, {
+        x: width - 70,
+        y: height - 70,
+        scale: 0.8
+      });
+      
+      // Give initial greeting
+      this.time.delayedCall(1000, () => {
+        if (this.byteAssistant) {
+          this.byteAssistant.say(
+            "I'm here to help with your coding challenge! Click the 'Ask Byte' button or the Hints button if you get stuck.",
+            { mood: 'excited', duration: 5000 }
+          );
+        }
+      });
+    }
+    
+    // Create the ByteInteractionUI component
+    this.byteInteractionUI = new ByteInteractionUI(this, this.byteAssistant, {
+      x: 10,
+      y: this.cameras.main.height - 60,
+      width: 160,
+      height: 45,
+      buttonText: 'Ask Byte'
+    });
+  }
+  
+  /**
+   * Handle when the player clicks on Byte
+   * @param {Object} data - Click event data
+   */
+  handleByteClick(data) {
+    // If we have the current challenge data, create a game state object
+    if (this.currentChallenge) {
+      // Get the current code from the editor
+      const playerCode = this.codeEditor ? this.codeEditor.getCode() : '';
+      const errorMessage = this.codeEditor ? this.codeEditor.getLastError() : null;
+      
+      // Increment hint count for this challenge
+      this.hintCount++;
+      
+      // Track attempt count
+      const currentAttempts = this.stateManager.getState(`challenges.${this.currentChallengeId}.attempts`) || 1;
+      
+      // Build game state object for AI assistant
+      const gameState = {
+        playerName: this.stateManager.getState('player.name') || 'Player',
+        currentMission: this.currentChallenge.title,
+        challengeId: this.currentChallengeId,
+        challengeDescription: this.currentChallenge.description,
+        learningObjective: this.currentChallenge.skillType || 'coding',
+        playerCode: playerCode,
+        errorMessage: errorMessage,
+        previousHint: this.lastHint || null,
+        attemptCount: currentAttempts,
+        hintCount: this.hintCount
+      };
+      
+      // Use AI assistant to get a hint
+      data.assistant.getHint(gameState);
+      
+      // Store this hint request for tracking
+      this.lastHintTimestamp = Date.now();
+      
+      // Update hint count in game state for analytics
+      this.stateManager.setState(`challenges.${this.currentChallengeId}.hints`, this.hintCount);
+      this.stateManager.saveState();
+      
+      // Show hints panel as well
+      if (!this.hintsPanel.visible) {
+        this.toggleHintsPanel();
+      }
+      
+      // Listen for an event when hint is delivered
+      this.events.once('hint-delivered', (hint) => {
+        this.lastHint = hint;
+      });
+    } else {
+      // Fallback to static hints if no challenge is loaded
+      // Generic tips if no specific hints are available
+      const tips = [
+        "Make sure your syntax is correct!",
+        "Check for any missing semicolons or brackets.",
+        "Read the challenge description carefully to understand what's required.",
+        "Remember to initialize your variables before using them.",
+        "Try breaking down the problem into smaller steps." 
+      ];
+      
+      const randomTip = tips[Math.floor(Math.random() * tips.length)];
+      data.assistant.say(randomTip, { mood: 'thinking', duration: 5000 });
+    }
   }
   
   /**
@@ -602,10 +871,21 @@ class CodeChallengeScene extends Phaser.Scene {
   shutdown() {
     // Remove event listeners
     window.removeEventListener('challenge-complete', this.handleChallengeComplete);
+    this.events.off('byte-click', this.handleByteClick, this);
     
     // Destroy components
     if (this.codeEditor) {
       this.codeEditor.destroy();
+    }
+    
+    // Destroy ByteInteractionUI
+    if (this.byteInteractionUI) {
+      this.byteInteractionUI.destroy();
+    }
+    
+    // Only destroy Byte if we created it (not if it was passed from GameScene)
+    if (this.byteAssistant && !this.externalByteAssistant) {
+      this.byteAssistant.destroy();
     }
     
     // Call parent cleanup

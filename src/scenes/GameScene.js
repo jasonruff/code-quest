@@ -8,6 +8,8 @@ import GameStateManager from '../utils/GameStateManager';
 import GameStatePanel from '../components/GameStatePanel';
 import MissionTracker from '../components/MissionTracker';
 import PlayerStatusDisplay from '../components/PlayerStatusDisplay';
+import ByteAssistant from '../components/ByteAssistant';
+import ByteInteractionUI from '../components/ByteInteractionUI';
 import { initCodeChallengeSystem, createCodeChallengeTerminal } from '../utils/codeChallengeSystem';
 
 /**
@@ -36,6 +38,8 @@ class GameScene extends Phaser.Scene {
     this.gameStatePanel = null;
     this.missionTracker = null;
     this.playerStatusDisplay = null;
+    this.byteAssistant = null;
+    this.byteInteractionUI = null;
     
     // Time tracking
     this.lastUpdateTime = 0;
@@ -174,6 +178,9 @@ class GameScene extends Phaser.Scene {
       this.stateManager.updatePlayTime(timeDelta);
       this.lastUpdateTime = time;
     }
+    
+    // Update camera boundaries if needed (to ensure UI elements stay in view)
+    this.updateCameraBounds();
   }
 
   createWorld() {
@@ -256,17 +263,32 @@ class GameScene extends Phaser.Scene {
       }
     });
     
-    // Create test code challenge terminal if in debug mode
+    // Create the security initialization challenge terminal (US-007)
+    const securityTerminal = createCodeChallengeTerminal(this, {
+      x: 192,
+      y: 160,
+      width: 50,
+      height: 50,
+      name: 'Security Terminal',
+      message: 'Security systems offline. Initialize the security code to proceed.',
+      challengeId: 'security-initialization',
+      missionId: 'security-initialization',
+      skillType: 'variables'
+    });
+    
+    this.interactiveObjects.push(securityTerminal);
+    
+    // Create additional test terminals if in debug mode
     if (GAME_CONFIG.debug) {
       const testTerminal = createCodeChallengeTerminal(this, {
-        x: 200,
-        y: 200,
+        x: 600,
+        y: 350,
         width: 50,
         height: 50,
         name: 'Test Terminal',
-        message: 'Press SPACE to start the Security Initialization challenge',
-        challengeId: 'security-initialization',
-        missionId: 'security-initialization'
+        message: 'Press SPACE to try other coding challenges',
+        challengeId: 'variable-declaration',
+        missionId: 'variable-declaration'
       });
       
       this.interactiveObjects.push(testTerminal);
@@ -327,6 +349,18 @@ class GameScene extends Phaser.Scene {
       y: 10,
       width: 200
     });
+    
+    // Create Byte assistant with Claude API integration
+    this.byteAssistant = new ByteAssistant(this, {
+      x: this.cameras.main.width - 70,
+      y: this.cameras.main.height - 70,
+      scale: 0.8,
+      // API key would normally come from environment variables or secure storage
+      apiKey: process.env.CLAUDE_API_KEY || 'API_KEY_PLACEHOLDER'
+    });
+    
+    // Set up Byte assistant event handling
+    this.setupByteAssistantEvents();
   }
   
   /**
@@ -400,6 +434,29 @@ class GameScene extends Phaser.Scene {
     // Add camera controls for debugging/testing
     if (GAME_CONFIG.debug) {
       this.setupCameraControls();
+    }
+  }
+  
+  /**
+   * Update camera bounds to ensure UI elements stay visible
+   */
+  updateCameraBounds() {
+    // Ensure Byte Assistant stays within camera view (as it's fixed to the camera)
+    if (this.byteAssistant) {
+      const cameraView = this.cameras.main.worldView;
+      this.byteAssistant.setPosition(
+        cameraView.right - 70,
+        cameraView.bottom - 70
+      );
+    }
+    
+    // Update ByteInteractionUI position
+    if (this.byteInteractionUI) {
+      const cameraView = this.cameras.main.worldView;
+      this.byteInteractionUI.setPosition(
+        10,
+        cameraView.bottom - 60
+      );
     }
   }
   
@@ -582,6 +639,23 @@ class GameScene extends Phaser.Scene {
   processInteraction(interactionResult) {
     if (!this.stateManager || !interactionResult) return;
     
+    // Special handling for door interactions after security initialization (US-007)
+    if (interactionResult.type === 'door' && interactionResult.properties) {
+      const isSecurityInitialized = this.stateManager.getState('gameFlags.securityInitialized') || false;
+      
+      // Override the message if security is initialized and door was locked
+      if (isSecurityInitialized && interactionResult.properties.locked) {
+        // Update door properties to be unlocked
+        interactionResult.properties.locked = false;
+        interactionResult.message = "The door is now unlocked. You can proceed to the next area.";
+        
+        // Play an unlocking sound
+        if (this.sound.get('sfxInteract')) {
+          this.sound.play('sfxInteract', { volume: 0.5 });
+        }
+      }
+    }
+    
     // Check if this interaction has a mission ID
     if (interactionResult.properties && interactionResult.properties.missionId) {
       const missionId = interactionResult.properties.missionId;
@@ -592,6 +666,11 @@ class GameScene extends Phaser.Scene {
       if (!currentMission) {
         // If no mission is active, start this one
         this.stateManager.startMission(missionId);
+        
+        // Special handling for security initialization mission (US-007)
+        if (missionId === 'security-initialization') {
+          this.showFloatingText("Initialize the security system", 3000);
+        }
       } else if (currentMission === missionId) {
         // If this is the current mission, handle progression
         // For code challenges, completion is handled in the CodeChallengeScene
@@ -679,7 +758,148 @@ class GameScene extends Phaser.Scene {
   handleChallengeCompleted(data) {
     console.log(`Challenge completed: ${data.challengeId}`);
     
-    // You could trigger mission progression, unlocks, or other game events here
+    // Special handling for Security Initialization challenge (US-007)
+    if (data.challengeId === 'security-initialization') {
+      this.handleSecurityInitialized();
+    } else if (this.byteAssistant) {
+      // For other challenges, have Byte give a congratulatory message
+      this.byteAssistant.say(
+        `Well done! You've completed the ${this.formatMissionName(data.challengeId)} challenge successfully.`,
+        { mood: 'happy', duration: 4000 }
+      );
+    }
+    
+    // You could trigger other mission progression, unlocks, or other game events here
+  }
+  
+  /**
+   * Handle the security initialization completion
+   * Special effects and world changes for US-007
+   */
+  handleSecurityInitialized() {
+    // Add visual effects to show security system activation
+    this.showSecurityActivationEffects();
+    
+    // Update game state for door unlocking
+    if (this.stateManager) {
+      this.stateManager.setState('gameFlags.securityInitialized', true);
+      this.stateManager.saveState();
+    }
+    
+    // Play success sound
+    if (this.sound.get('sfxInteract')) {
+      this.sound.play('sfxInteract', { volume: 0.7 });
+    }
+    
+    // Show dialog with instructions
+    this.dialogBox.show(
+      "Security systems initialized! Access code '9876' accepted. You have unlocked access to the main facility.",
+      "Security System",
+      () => {
+        // After dialog closes, show hint for next steps
+        this.time.delayedCall(1000, () => {
+          this.showFloatingText("Door unlocked! Proceed to the exit.", 3000);
+          
+          // Have Byte assistant congratulate the player
+          if (this.byteAssistant) {
+            this.time.delayedCall(800, () => {
+              this.byteAssistant.say(
+                "Great job initializing the security system! You've shown excellent skill with variable declaration.", 
+                { mood: 'happy', duration: 5000 }
+              );
+            });
+          }
+        });
+      }
+    );
+  }
+  
+  /**
+   * Show security activation visual effects throughout the room
+   */
+  showSecurityActivationEffects() {
+    // Create a security activation wave effect
+    const centerX = this.cameras.main.width / 2;
+    const centerY = this.cameras.main.height / 2;
+    
+    // Create wave effect
+    const circle = this.add.circle(centerX, centerY, 10, 0x00ff00, 0.3);
+    circle.setDepth(1000);
+    
+    // Animate it
+    this.tweens.add({
+      targets: circle,
+      radius: 1000,
+      alpha: 0,
+      duration: 2000,
+      onComplete: () => {
+        circle.destroy();
+      }
+    });
+    
+    // Add flashing lights on terminals
+    this.interactiveObjects.forEach(obj => {
+      if (obj.type === 'terminal' || obj.type === 'computer') {
+        // Create a flash effect
+        const flash = this.add.rectangle(obj.x, obj.y, 32, 32, 0x00ff00, 0.8);
+        flash.setDepth(100);
+        
+        // Animate the flash
+        this.tweens.add({
+          targets: flash,
+          alpha: 0,
+          duration: 500,
+          yoyo: true,
+          repeat: 2,
+          onComplete: () => {
+            flash.destroy();
+          }
+        });
+      }
+    });
+  }
+  
+  /**
+   * Show floating text as a gameplay hint
+   * @param {String} text - The text to show
+   * @param {Number} duration - How long to show it in ms
+   */
+  showFloatingText(text, duration = 2000) {
+    const x = this.cameras.main.worldView.centerX;
+    const y = this.cameras.main.worldView.centerY - 100;
+    
+    const floatingText = this.add.text(x, y, text, {
+      fontFamily: 'Arial',
+      fontSize: '20px',
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 4,
+      align: 'center'
+    }).setOrigin(0.5)
+      .setDepth(1000)
+      .setAlpha(0);
+    
+    // Fade in and then out
+    this.tweens.add({
+      targets: floatingText,
+      alpha: 1,
+      y: y - 20,
+      ease: 'Power1',
+      duration: 500,
+      onComplete: () => {
+        this.tweens.add({
+          targets: floatingText,
+          alpha: 0,
+          y: y - 40,
+          ease: 'Power1',
+          duration: 500,
+          delay: duration - 1000,
+          onComplete: () => {
+            floatingText.destroy();
+          }
+        });
+      }
+    });
   }
   
   /**
@@ -687,6 +907,24 @@ class GameScene extends Phaser.Scene {
    * @param {String} challengeId - ID of the challenge to launch
    */
   launchCodeChallenge(challengeId) {
+    // Have Byte give an encouraging message before starting the challenge
+    if (this.byteAssistant) {
+      this.byteAssistant.say(
+        "Ready to tackle a coding challenge? I'll be here to help if you need it!", 
+        { mood: 'excited', duration: 3000, onComplete: () => {
+          this.startCodeChallenge(challengeId);
+        }}
+      );
+    } else {
+      this.startCodeChallenge(challengeId);
+    }
+  }
+  
+  /**
+   * Start the actual code challenge scene
+   * @param {String} challengeId - Challenge ID to launch
+   */
+  startCodeChallenge(challengeId) {
     if (this.codeSystem) {
       // Use the code system to launch the challenge
       this.codeSystem.launchChallenge(challengeId);
@@ -697,16 +935,62 @@ class GameScene extends Phaser.Scene {
       this.scene.launch('CodeChallengeScene', {
         challengeId: challengeId,
         previousScene: 'GameScene',
-        stateManager: this.stateManager
+        stateManager: this.stateManager,
+        byteAssistant: this.byteAssistant
       });
     }
     
     // Disable interaction while in the code challenge
     this.interactionEnabled = false;
   }
-  /**
-   * Cleanup resources when shutting down the scene
+    /**
+   * Set up Byte assistant event handling and interaction UI
    */
+  setupByteAssistantEvents() {
+    // Listen for click events
+    this.events.on('byte-click', this.handleByteClick, this);
+    
+    // Create ByteInteractionUI
+    this.byteInteractionUI = new ByteInteractionUI(this, this.byteAssistant, {
+      x: 10,
+      y: this.cameras.main.height - 60,
+      width: 160,
+      height: 45,
+      buttonText: 'Ask Byte'
+    });
+    
+    // Introduce Byte at the start of the game (with a delay)
+    this.time.delayedCall(2000, () => {
+      if (this.byteAssistant) {
+        this.byteAssistant.say(
+          "Hello! I'm Byte, your AI assistant. I'll help you navigate the challenges in this coding adventure! Click the 'Ask Byte' button anytime you need assistance.",
+          { mood: 'excited', duration: 8000 }
+        );
+      }
+    });
+  }
+  
+  /**
+   * Handle when the player clicks on Byte
+   * @param {Object} data - Click event data
+   */
+  handleByteClick(data) {
+    // Show a tip or hint when Byte is clicked
+    const tips = [
+      "Remember to initialize your variables before using them!",
+      "Need help with a challenge? Click the Hints button in the code editor.",
+      "Different challenges require different coding skills. Practice each one!",
+      "You can open the game state panel with the TAB key to see your progress.",
+      "Always check that your code matches the requirements exactly!"
+    ];
+    
+    // Pick a random tip
+    const randomTip = tips[Math.floor(Math.random() * tips.length)];
+    
+    // Display the tip
+    data.assistant.say(randomTip, { mood: 'happy', duration: 5000 });
+  }
+
   shutdown() {
     // First, save the current state
     if (this.stateManager) {
@@ -730,8 +1014,17 @@ class GameScene extends Phaser.Scene {
       this.dialogBox.destroy();
     }
     
+    if (this.byteAssistant) {
+      this.byteAssistant.destroy();
+    }
+    
+    if (this.byteInteractionUI) {
+      this.byteInteractionUI.destroy();
+    }
+    
     // Cleanup code challenge event listeners
     this.events.off('challenge-completed', this.handleChallengeCompleted, this);
+    this.events.off('byte-click', this.handleByteClick, this);
     
     // Cleanup state manager
     if (this.stateManager) {
