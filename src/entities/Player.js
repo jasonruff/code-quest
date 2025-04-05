@@ -32,91 +32,75 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     // Initialize animations
     this.createAnimations();
     
-    // Set initial animation
-    this.anims.play('player-idle-down');
+    // Use a fallback texture if playerSheet isn't available
+    if (!scene.textures.exists('playerSheet') || !scene.anims.exists('player-idle-down')) {
+      this.setTexture('player');
+      console.warn('Using fallback player texture - animations not available');
+    } else {
+      // Set initial animation
+      try {
+        this.anims.play('player-idle-down');
+      } catch (error) {
+        console.error('Error playing player animation:', error);
+        // Fallback to simple texture
+        this.setTexture('player');
+      }
+    }
   }
   
   /**
    * Create all player animations
    */
   createAnimations() {
-    const anims = this.scene.anims;
-    
-    // Get the spritesheet key
-    const sheet = this.texture.key;
-    
-    // Idle animations for each direction
-    if (!anims.exists('player-idle-down')) {
-      anims.create({
-        key: 'player-idle-down',
-        frames: anims.generateFrameNumbers(sheet, { start: 0, end: 3 }),
-        frameRate: 8,
-        repeat: -1
-      });
-    }
-    
-    if (!anims.exists('player-idle-up')) {
-      anims.create({
-        key: 'player-idle-up',
-        frames: anims.generateFrameNumbers(sheet, { start: 4, end: 7 }),
-        frameRate: 8,
-        repeat: -1
-      });
-    }
-    
-    if (!anims.exists('player-idle-left')) {
-      anims.create({
-        key: 'player-idle-left',
-        frames: anims.generateFrameNumbers(sheet, { start: 8, end: 11 }),
-        frameRate: 8,
-        repeat: -1
-      });
-    }
-    
-    if (!anims.exists('player-idle-right')) {
-      anims.create({
-        key: 'player-idle-right',
-        frames: anims.generateFrameNumbers(sheet, { start: 12, end: 15 }),
-        frameRate: 8,
-        repeat: -1
-      });
-    }
-    
-    // Walk animations for each direction
-    if (!anims.exists('player-walk-down')) {
-      anims.create({
-        key: 'player-walk-down',
-        frames: anims.generateFrameNumbers(sheet, { start: 16, end: 23 }),
-        frameRate: 12,
-        repeat: -1
-      });
-    }
-    
-    if (!anims.exists('player-walk-up')) {
-      anims.create({
-        key: 'player-walk-up',
-        frames: anims.generateFrameNumbers(sheet, { start: 24, end: 31 }),
-        frameRate: 12,
-        repeat: -1
-      });
-    }
-    
-    if (!anims.exists('player-walk-left')) {
-      anims.create({
-        key: 'player-walk-left',
-        frames: anims.generateFrameNumbers(sheet, { start: 32, end: 39 }),
-        frameRate: 12,
-        repeat: -1
-      });
-    }
-    
-    if (!anims.exists('player-walk-right')) {
-      anims.create({
-        key: 'player-walk-right',
-        frames: anims.generateFrameNumbers(sheet, { start: 40, end: 47 }),
-        frameRate: 12,
-        repeat: -1
-      });
+    try {
+      const anims = this.scene.anims;
+      
+      // Get the spritesheet key
+      const sheet = this.texture.key;
+      
+      // Check if the texture exists and has frames
+      if (!this.scene.textures.exists(sheet)) {
+        console.warn(`Texture ${sheet} doesn't exist, skipping animation creation`);
+        return;
+      }
+      
+      // Try to create animations safely
+      const createAnimSafely = (key, start, end, frameRate, repeat) => {
+        try {
+          if (!anims.exists(key)) {
+            // Make sure frame numbers exist in the texture
+            const texture = this.scene.textures.get(sheet);
+            const framesExist = texture.has(start) && texture.has(end);
+            
+            if (framesExist) {
+              anims.create({
+                key: key,
+                frames: anims.generateFrameNumbers(sheet, { start: start, end: end }),
+                frameRate: frameRate,
+                repeat: repeat
+              });
+            } else {
+              console.warn(`Skipping animation ${key} - frames ${start}-${end} not found in texture`);
+            }
+          }
+        } catch (error) {
+          console.error(`Error creating animation ${key}:`, error);
+        }
+      };
+      
+      // Idle animations for each direction
+      createAnimSafely('player-idle-down', 0, 3, 8, -1);
+      createAnimSafely('player-idle-up', 4, 7, 8, -1);
+      createAnimSafely('player-idle-left', 8, 11, 8, -1);
+      createAnimSafely('player-idle-right', 12, 15, 8, -1);
+      
+      // Walk animations for each direction
+      createAnimSafely('player-walk-down', 16, 23, 12, -1);
+      createAnimSafely('player-walk-up', 24, 31, 12, -1);
+      createAnimSafely('player-walk-left', 32, 39, 12, -1);
+      createAnimSafely('player-walk-right', 40, 47, 12, -1);
+    } catch (error) {
+      console.error('Error in createAnimations:', error);
     }
   }
   
@@ -180,10 +164,36 @@ class Player extends Phaser.Physics.Arcade.Sprite {
   playAnimation() {
     const { isMoving, direction } = this.movementState;
     
-    if (isMoving) {
-      this.anims.play(`player-walk-${direction}`, true);
-    } else {
-      this.anims.play(`player-idle-${direction}`, true);
+    try {
+      const animKey = isMoving ? `player-walk-${direction}` : `player-idle-${direction}`;
+      
+      // Check if animation exists before playing
+      if (this.scene.anims.exists(animKey)) {
+        this.anims.play(animKey, true);
+      } else {
+        // If animation doesn't exist but we haven't warned yet, log it
+        if (!this._warnedMissingAnims) {
+          this._warnedMissingAnims = {};
+        }
+        
+        if (!this._warnedMissingAnims[animKey]) {
+          console.warn(`Missing animation: ${animKey}`);
+          this._warnedMissingAnims[animKey] = true;
+        }
+        
+        // Use a simple fallback behavior - just set a color based on direction
+        if (!this.scene.textures.exists('player')) {
+          const colors = {
+            up: 0x00FF00,
+            down: 0xFF0000,
+            left: 0x0000FF,
+            right: 0xFF00FF
+          };
+          this.setTint(colors[direction] || 0xFFFFFF);
+        }
+      }
+    } catch (error) {
+      console.error('Error playing animation:', error);
     }
   }
   

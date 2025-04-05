@@ -24,7 +24,7 @@ export function initCodeChallengeSystem(scene, stateManager) {
    * @param {Object} data - Challenge completion data
    */
   function handleChallengeComplete(data) {
-    const { challengeId, code, result } = data;
+    const { challengeId, code, result, metrics } = data;
     
     if (!challengeId) return;
     
@@ -37,6 +37,16 @@ export function initCodeChallengeSystem(scene, stateManager) {
     // Save player's solution
     stateManager.setState(`challenges.${challengeId}.playerSolution`, code);
     stateManager.setState(`challenges.${challengeId}.lastCompleted`, Date.now());
+    
+    // Save performance metrics if available (from US-006)
+    if (metrics) {
+      stateManager.setState(`challenges.${challengeId}.metrics`, {
+        executionTime: metrics.executionTime || 0,
+        memoryUsage: metrics.memoryUsage || 0,
+        errorCount: metrics.errorCount || 0,
+        completionDate: Date.now()
+      });
+    }
     
     // Award experience based on challenge difficulty
     const challenge = challengeManager.getChallenge(challengeId);
@@ -59,6 +69,11 @@ export function initCodeChallengeSystem(scene, stateManager) {
           break;
       }
       
+      // Extra bonus for good performance (US-006 integration)
+      if (metrics && metrics.executionTime < 50) {
+        experiencePoints += 20; // Fast execution bonus
+      }
+      
       // Complete the mission associated with this challenge
       stateManager.completeMission(challengeId, {
         experience: experiencePoints,
@@ -66,13 +81,29 @@ export function initCodeChallengeSystem(scene, stateManager) {
           [challenge.skillType]: 1 // Increase skill level
         }
       });
+      
+      // Special handling for specific challenges (US-007)
+      if (challengeId === 'security-initialization') {
+        // Set a game flag to indicate security system is initialized
+        stateManager.setState('gameFlags.securityInitialized', true);
+        
+        // This could trigger other events in the game world
+        stateManager.setState('messages.system', [
+          ...(stateManager.getState('messages.system') || []),
+          {
+            text: 'Security system initialized successfully. Access granted to restricted areas.',
+            timestamp: Date.now(),
+            read: false
+          }
+        ]);
+      }
     }
     
     // Save state
     stateManager.saveState();
     
     // Trigger scene-specific events
-    scene.events.emit('challenge-completed', { challengeId, code, result });
+    scene.events.emit('challenge-completed', { challengeId, code, result, metrics });
   }
   
   /**

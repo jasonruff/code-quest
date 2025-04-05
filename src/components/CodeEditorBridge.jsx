@@ -2,9 +2,11 @@ import Phaser from 'phaser';
 import ReactDOM from 'react-dom/client';
 import React from 'react';
 import CodeEditorComponent from './CodeEditorComponent.jsx';
+import CodeChallengeManager from '../utils/CodeChallengeManager';
 
 /**
  * Bridge class to connect Phaser scene with React-based code editor
+ * Enhanced for US-006 to support secure code execution and performance metrics
  */
 class CodeEditorBridge {
   /**
@@ -39,6 +41,12 @@ class CodeEditorBridge {
     
     document.body.appendChild(this.container);
     
+    // Initialize challenge manager for secure code execution (US-006)
+    this.challengeManager = new CodeChallengeManager();
+    
+    // Reference to the component
+    this.component = null;
+    
     // Setup React component
     this.setupReactComponent();
     
@@ -55,10 +63,12 @@ class CodeEditorBridge {
     // Create root for React
     this.reactRoot = ReactDOM.createRoot(this.container);
     
-    // Render React component
+    // Render React component with challenge manager for secure execution
     this.reactRoot.render(
       <CodeEditorComponent 
+        ref={(component) => { this.component = component; }}
         challenge={challenge}
+        challengeManager={this.challengeManager}
         onSuccess={this.handleSuccess.bind(this)}
         onFailure={this.handleFailure.bind(this)}
         onError={this.handleError.bind(this)}
@@ -76,12 +86,15 @@ class CodeEditorBridge {
   
   /**
    * Handle successful challenge completion
-   * @param {Object} data - Success data
+   * @param {Object} data - Success data including metrics from US-006
    */
   handleSuccess(data) {
     // Create a custom event to communicate with the Phaser scene
     const event = new CustomEvent('challenge-complete', {
-      detail: data
+      detail: {
+        ...data,
+        timestamp: Date.now()
+      }
     });
     window.dispatchEvent(event);
     
@@ -121,6 +134,27 @@ class CodeEditorBridge {
     
     // Re-render with new challenge
     this.setupReactComponent();
+  }
+  
+  /**
+   * Set code in the editor
+   * @param {String} code - The code to set
+   */
+  setCode(code) {
+    if (this.component && this.component.setCode) {
+      this.component.setCode(code);
+    }
+  }
+  
+  /**
+   * Get code from the editor
+   * @returns {String} The current code
+   */
+  getCode() {
+    if (this.component && typeof this.component.getCode === 'function') {
+      return this.component.getCode();
+    }
+    return '';
   }
   
   /**

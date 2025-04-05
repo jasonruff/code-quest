@@ -230,6 +230,63 @@ class MissionTracker {
       const description = this.getMissionDescription(missionId);
       this.missionDescription.setText(description);
       
+      // Apply special formatting for Security Initialization challenge (US-007)
+      if (missionId === 'security-initialization') {
+        // Check if security is already initialized
+        const isSecurityInitialized = this.stateManager.getState('gameFlags.securityInitialized') || false;
+        
+        if (isSecurityInitialized) {
+          // Highlight completed security challenge
+          this.missionTitle.setColor('#4edc91');
+          
+          // Add a success icon if we don't have one yet
+          if (!this.securitySuccessIcon) {
+            this.securitySuccessIcon = this.scene.add.text(
+              this.missionTitle.x + this.missionTitle.width + 10,
+              this.missionTitle.y + 2,
+              '✓',
+              {
+                fontFamily: 'Arial',
+                fontSize: '16px',
+                color: '#4edc91',
+                fontStyle: 'bold'
+              }
+            );
+            this.container.add(this.securitySuccessIcon);
+          }
+        } else {
+          // Highlight active security challenge
+          this.missionTitle.setColor('#ffcc00');
+          
+          // Pulse effect for ongoing security mission
+          if (!this.missionTitleTween) {
+            this.missionTitleTween = this.scene.tweens.add({
+              targets: this.missionTitle,
+              alpha: 0.7,
+              duration: 800,
+              yoyo: true,
+              repeat: -1
+            });
+          }
+        }
+      } else {
+        // Reset formatting for other missions
+        this.missionTitle.setColor('#ffffff');
+        
+        // Stop any active tweens
+        if (this.missionTitleTween) {
+          this.missionTitleTween.stop();
+          this.missionTitleTween = null;
+          this.missionTitle.setAlpha(1);
+        }
+        
+        // Remove success icon if it exists
+        if (this.securitySuccessIcon) {
+          this.securitySuccessIcon.destroy();
+          this.securitySuccessIcon = null;
+        }
+      }
+      
       // Format status
       let statusText = 'Unknown';
       let statusColor = '#aaaaaa';
@@ -262,6 +319,19 @@ class MissionTracker {
       this.missionDescription.setText('Complete missions to progress through the game.');
       this.missionStatus.setText('Status: Not Started');
       this.missionStatus.setColor('#aaaaaa');
+      
+      // Stop any active tweens
+      if (this.missionTitleTween) {
+        this.missionTitleTween.stop();
+        this.missionTitleTween = null;
+        this.missionTitle.setAlpha(1);
+      }
+      
+      // Remove success icon if it exists
+      if (this.securitySuccessIcon) {
+        this.securitySuccessIcon.destroy();
+        this.securitySuccessIcon = null;
+      }
     }
   }
   
@@ -298,14 +368,26 @@ class MissionTracker {
   getMissionDescription(missionId) {
     if (!missionId) return '';
     
-    // Custom descriptions for known missions
+    // Enhanced description for Security Initialization (US-007)
+    if (missionId === 'security-initialization') {
+      // Check if security is already initialized
+      const isSecurityInitialized = this.stateManager.getState('gameFlags.securityInitialized') || false;
+      
+      if (isSecurityInitialized) {
+        return 'Security system successfully activated with code "9876". The main exit is now unlocked.';
+      } else {
+        return 'OBJECTIVE: Find and interact with the Security Terminal. Initialize a variable called securityCode and set its value to "9876" to activate the security system.';
+      }
+    }
+    
+    // Custom descriptions for other missions
     const descriptions = {
-      'security-initialization': 'Initialize a variable called securityCode and set its value to "9876" to activate the security system.',
       'logic-gates': 'Create logical conditions to route the power through the correct gates.',
       'variable-declaration': 'Declare and initialize variables with different data types.',
       'function-basics': 'Create functions to automate repetitive tasks.',
       'conditional-statements': 'Use if/else statements to control program flow.',
-      'loops-intro': 'Use loops to repeat code operations efficiently.'
+      'loops-intro': 'Use loops to repeat code operations efficiently.',
+      'array-operations': 'Process data arrays using array methods and transformations.'
     };
     
     return descriptions[missionId] || 'Complete this mission to progress in the game.';
