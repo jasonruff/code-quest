@@ -23,10 +23,5 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     emptyOutDir: true
-  },
-  esbuild: {
-    loader: {
-      '.js': 'jsx'  // This enables JSX syntax in .js files
-    }
   }
 });

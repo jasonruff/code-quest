@@ -2,8 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './assets/styles/main.css';
-import './assets/styles/codeEditor.css';
+//import './assets/styles/main.css';
+//import './assets/styles/codeEditor.css';
 
 // Initialize the root element for React
 const rootElement = document.getElementById('root');

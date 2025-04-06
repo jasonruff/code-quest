@@ -9,7 +9,7 @@
 const API_CONFIG = {
   // Claude API configuration
   claude: {
-    apiKey: process.env.CLAUDE_API_KEY || 'API_KEY_PLACEHOLDER',
+    apiKey:  import.meta.env.VITE_CLAUDE_API_KEY || 'API_KEY_PLACEHOLDER',
     endpoint: 'https://api.anthropic.com/v1/messages',
     version: '2023-06-01',
     defaultModel: 'claude-3-haiku-20240307',
