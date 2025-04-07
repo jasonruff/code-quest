@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" width="320" height="200">
+  <!-- Color Palette -->
+  <defs>
+    <!-- UI Colors -->
+    <linearGradient id="button-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#5B6EE1"/>
+      <stop offset="100%" style="stop-color:#3F51B5"/>
+    </linearGradient>
+    
+    <linearGradient id="button-hover-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7986EF"/>
+      <stop offset="100%" style="stop-color:#5B6EE1"/>
+    </linearGradient>
+    
+    <linearGradient id="editor-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#252836"/>
+      <stop offset="100%" style="stop-color:#1E212D"/>
+    </linearGradient>
+    
+    <linearGradient id="header-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3F51B5"/>
+      <stop offset="100%" style="stop-color:#303F9F"/>
+    </linearGradient>
+    
+    <linearGradient id="byte-button-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7B42F6"/>
+      <stop offset="100%" style="stop-color:#5426C4"/>
+    </linearGradient>
+    
+    <linearGradient id="byte-button-hover-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#9B62FF"/>
+      <stop offset="100%" style="stop-color:#7B42F6"/>
+    </linearGradient>
+    
+    <linearGradient id="speech-bubble-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#EFEFEF"/>
+      <stop offset="100%" style="stop-color:#E0E0E0"/>
+    </linearGradient>
+    
+    <!-- Effects -->
+    <filter id="drop-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#00000044"/>
+    </filter>
+    
+    <filter id="inner-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feOffset dx="0" dy="1"/>
+      <feGaussianBlur stdDeviation="1" result="offset-blur"/>
+      <feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse"/>
+      <feFlood flood-color="#00000066" flood-opacity="1" result="color"/>
+      <feComposite operator="in" in="color" in2="inverse" result="shadow"/>
+      <feComposite operator="over" in="shadow" in2="SourceGraphic"/>
+    </filter>
+    
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite operator="over" in="blur" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+
+  <!-- Code Editor Frame -->
+  <g transform="translate(10, 10)">
+    <rect x="0" y="0" width="140" height="100" rx="4" fill="url(#editor-gradient)" filter="url(#drop-shadow)"/>
+    
+    <!-- Header -->
+    <rect x="0" y="0" width="140" height="20" rx="4" fill="url(#header-gradient)"/>
+    <rect x="0" y="16" width="140" height="4" rx="0" fill="url(#header-gradient)"/>
+    <text x="10" y="14" font-family="monospace" font-size="10" fill="#FFFFFF">Code Editor</text>
+    
+    <!-- Close/Minimize Buttons -->
+    <circle cx="130" cy="10" r="4" fill="#E53935"/>
+    <circle cx="118" cy="10" r="4" fill="#FFEB3B"/>
+    
+    <!-- Editor Content -->
+    <rect x="5" y="25" width="130" height="70" rx="2" fill="#1A1D29"/>
+    <text x="10" y="40" font-family="monospace" font-size="8" fill="#E0E0E0">function initGame() {</text>
+    <text x="15" y="50" font-family="monospace" font-size="8" fill="#4FC3F7">  const player = new</text>
+    <text x="15" y="60" font-family="monospace" font-size="8" fill="#4FC3F7">  Player('explorer');</text>
+    <text x="15" y="70" font-family="monospace" font-size="8" fill="#4FC3F7">  return player;</text>
+    <text x="10" y="80" font-family="monospace" font-size="8" fill="#E0E0E0">}</text>
+    
+    <!-- Line Numbers -->
+    <rect x="5" y="25" width="12" height="70" fill="#252836"/>
+    <text x="8" y="40" font-family="monospace" font-size="7" fill="#757575">1</text>
+    <text x="8" y="50" font-family="monospace" font-size="7" fill="#757575">2</text>
+    <text x="8" y="60" font-family="monospace" font-size="7" fill="#757575">3</text>
+    <text x="8" y="70" font-family="monospace" font-size="7" fill="#757575">4</text>
+    <text x="8" y="80" font-family="monospace" font-size="7" fill="#757575">5</text>
+  </g>
+
+  <!-- UI Buttons (Normal/Hover states) -->
+  <g transform="translate(170, 10)">
+    <!-- Normal Button -->
+    <rect x="0" y="0" width="80" height="30" rx="4" fill="url(#button-gradient)" filter="url(#drop-shadow)"/>
+    <text x="40" y="19" font-family="sans-serif" font-size="12" fill="#FFFFFF" text-anchor="middle">Submit Code</text>
+    
+    <!-- Hover Button -->
+    <rect x="0" y="40" width="80" height="30" rx="4" fill="url(#button-hover-gradient)" filter="url(#drop-shadow)"/>
+    <text x="40" y="59" font-family="sans-serif" font-size="12" fill="#FFFFFF" text-anchor="middle">Submit Code</text>
+    
+    <!-- Disabled Button -->
+    <rect x="0" y="80" width="80" height="30" rx="4" fill="#9E9E9E" filter="url(#drop-shadow)"/>
+    <text x="40" y="99" font-family="sans-serif" font-size="12" fill="#E0E0E0" text-anchor="middle">Submit Code</text>
+  </g>
+
+  <!-- "Ask Byte" Button (Normal/Hover states) -->
+  <g transform="translate(170, 120)">
+    <!-- Normal State -->
+    <rect x="0" y="0" width="80" height="30" rx="15" fill="url(#byte-button-gradient)" filter="url(#drop-shadow)"/>
+    <circle cx="15" cy="15" r="10" fill="#FFFFFF"/>
+    <circle cx="15" cy="15" r="8" fill="url(#byte-button-gradient)"/>
+    <text x="50" y="19" font-family="sans-serif" font-size="12" fill="#FFFFFF" text-anchor="middle">Ask Byte</text>
+    
+    <!-- Hover State -->
+    <rect x="0" y="40" width="80" height="30" rx="15" fill="url(#byte-button-hover-gradient)" filter="url(#drop-shadow)"/>
+    <circle cx="15" cy="55" r="10" fill="#FFFFFF"/>
+    <circle cx="15" cy="55" r="8" fill="url(#byte-button-hover-gradient)"/>
+    <text x="50" y="59" font-family="sans-serif" font-size="12" fill="#FFFFFF" text-anchor="middle">Ask Byte</text>
+  </g>
+
+  <!-- Speech Bubble Design -->
+  <g transform="translate(10, 120)">
+    <!-- Speech Bubble -->
+    <path d="M0,10 Q0,0 10,0 H120 Q130,0 130,10 V50 Q130,60 120,60 H30 L20,75 L20,60 H10 Q0,60 0,50 Z" 
+          fill="url(#speech-bubble-gradient)" filter="url(#drop-shadow)"/>
+    
+    <!-- Speech Bubble Content -->
+    <text x="65" y="20" font-family="sans-serif" font-size="9" fill="#333333" text-anchor="middle">Hi explorer! Need help with coding?</text>
+    <text x="65" y="35" font-family="sans-serif" font-size="9" fill="#333333" text-anchor="middle">Try using variables to store</text>
+    <text x="65" y="50" font-family="sans-serif" font-size="9" fill="#333333" text-anchor="middle">the player's initial position.</text>
+  </g>
+
+  <!-- Menu Buttons and Frames -->
+  <g transform="translate(260, 10)">
+    <!-- Menu Frame -->
+    <rect x="0" y="0" width="50" height="140" rx="4" fill="url(#editor-gradient)" filter="url(#drop-shadow)"/>
+    
+    <!-- Header -->
+    <rect x="0" y="0" width="50" height="20" rx="4" fill="url(#header-gradient)"/>
+    <rect x="0" y="16" width="50" height="4" rx="0" fill="url(#header-gradient)"/>
+    <text x="25" y="14" font-family="sans-serif" font-size="8" fill="#FFFFFF" text-anchor="middle">Menu</text>
+    
+    <!-- Menu Buttons -->
+    <rect x="5" y="30" width="40" height="20" rx="2" fill="#3F51B5"/>
+    <text x="25" y="44" font-family="sans-serif" font-size="8" fill="#FFFFFF" text-anchor="middle">Missions</text>
+    
+    <rect x="5" y="60" width="40" height="20" rx="2" fill="#3F51B5"/>
+    <text x="25" y="74" font-family="sans-serif" font-size="8" fill="#FFFFFF" text-anchor="middle">Inventory</text>
+    
+    <rect x="5" y="90" width="40" height="20" rx="2" fill="#3F51B5"/>
+    <text x="25" y="104" font-family="sans-serif" font-size="8" fill="#FFFFFF" text-anchor="middle">Settings</text>
+    
+    <rect x="5" y="120" width="40" height="20" rx="2" fill="#3F51B5"/>
+    <text x="25" y="134" font-family="sans-serif" font-size="8" fill="#FFFFFF" text-anchor="middle">Help</text>
+  </g>
+</svg>

@@ -1,0 +1,230 @@
+# CodeQuest Game Assets Documentation
+
+This document provides detailed information about the SVG assets created for the CodeQuest educational coding game. Each asset is designed to fulfill specific requirements outlined in the user stories for the MVP development phase.
+
+## Asset Overview
+
+| File Name | Size | Related User Story | Purpose |
+|-----------|------|-------------------|---------|
+| player-character.svg | 256x64 | US-002 | Player avatar sprite sheet with idle animations in four directions |
+| byte-ai-companion.svg | 192x48 | US-008 | AI assistant character with different emotional states |
+| command-center-tileset.svg | 320x320 | US-003 | Environmental tiles for building the game world |
+| ui-elements.svg | 320x200 | US-005, US-011 | User interface components including code editor and buttons |
+
+## Detailed Asset Descriptions
+
+### 1. player-character.svg
+
+This sprite sheet contains the main player character in various positions for in-game movement and interaction.
+
+**Technical Details:**
+- Format: SVG with viewBox="0 0 256 64"
+- Individual frame size: 64x64 pixels
+- Number of frames: 4 (front, back, left, right views)
+- Color palette: Limited to 11 colors with gradients for depth
+
+**Implementation Notes:**
+- Each directional view is positioned at specific coordinates:
+  - Front view: (32, 32)
+  - Back view: (96, 32)
+  - Left view: (160, 32)
+  - Right view: (224, 32)
+- The character design is gender-neutral with a sci-fi explorer theme
+- Design includes a space suit, helmet, and exploration equipment
+- SVG elements use filter="url(#shadow)" for consistent lighting
+
+**Integration with Phaser.js:**
+- Extract individual frames at runtime or pre-process into sprite sheet
+- Define animation sequences by cycling through frames
+- For collision detection, use a simplified rectangular hitbox centered on the character
+
+### 2. byte-ai-companion.svg
+
+This character sheet features "Byte," the AI assistant that helps the player learn coding concepts throughout the game.
+
+**Technical Details:**
+- Format: SVG with viewBox="0 0 192 48"
+- Individual frame size: 48x48 pixels
+- Number of states: 4 (neutral, happy, thinking, confused)
+- Color palette: Primarily purples and blues with white highlights
+
+**Implementation Notes:**
+- Each emotional state is positioned at specific coordinates:
+  - Neutral/Default: (24, 24)
+  - Happy/Encouraging: (72, 24)
+  - Thinking/Processing: (120, 24)
+  - Confused/Questioning: (168, 24)
+- SVG includes animations for hover/float effect and glowing
+- Facial expressions clearly communicate different emotional states
+- The "thinking" state includes animated opacity changes
+
+**Integration with Phaser.js:**
+- Display appropriate Byte state based on context (success, error, processing)
+- Position Byte near the player when providing hints
+- Use SVG animation attributes or convert to sprite animations in Phaser
+
+### 3. command-center-tileset.svg
+
+This tileset provides modular environmental elements for building the Command Center level of the game.
+
+**Technical Details:**
+- Format: SVG with viewBox="0 0 320 320"
+- Individual tile size: 32x32 pixels
+- Organized in rows by element type (floors, walls, doors, terminals, decorative)
+- Color palette: Dark blues and teals with sci-fi accents
+
+**Implementation Notes:**
+- The tileset provides 50 unique tiles organized in categories:
+  - Row 1 (0,0): Floor variants (basic, patterned, indicator lights)
+  - Row 2 (0,32): Wall sections (straight, corners, panels, lights)
+  - Row 3 (0,64): Doorways (frames, closed, open, access panels)
+  - Row 4 (0,96): Computer terminals (stations, screens, data units)
+  - Row 5 (0,128): Decorative elements (warning stripes, vents, indicators)
+- Interactive elements (terminals, buttons) have visual indicators
+- Energy elements have animated glow effects
+- Consistent lighting from top-left source for all elements
+
+**Integration with Phaser.js:**
+- Extract individual tiles at runtime or pre-process into tilemap
+- Use Phaser's tilemap functionality to build levels
+- Apply special effects to animated tiles (energy cores, terminals)
+- Define collision maps based on wall and obstacle tiles
+
+### 4. ui-elements.svg
+
+This file contains all user interface components needed for the game, including the code editor and interaction buttons.
+
+**Technical Details:**
+- Format: SVG with viewBox="0 0 320 200"
+- Organized by component type and state variations
+- Color palette: Dark editor theme with blue accent colors
+- Designed for readability and clear affordances
+
+**Implementation Notes:**
+- The UI components include:
+  - Code Editor frame with syntax highlighting (10,10)
+  - Standard buttons in three states: normal, hover, disabled (170,10)
+  - "Ask Byte" special button with normal and hover states (170,120)
+  - Speech bubble design for Byte's responses (10,120)
+  - Menu buttons and frames for game navigation (260,10)
+- All interactive elements have clear normal/hover states
+- Text elements use web-safe fonts (sans-serif, monospace)
+- All components use consistent styling with gradients and shadows
+
+**Integration with Phaser.js:**
+- Extract UI components individually for placement in the game interface
+- Implement button states using Phaser's input system
+- For the code editor, consider using an HTML overlay with CodeMirror as mentioned in US-005
+- The speech bubble can be scaled based on content length
+
+## Asset Implementation Guidelines
+
+1. **Asset Loading**
+   - Load SVG assets in Phaser's preload function:
+     ```javascript
+     function preload() {
+         this.load.svg('player', 'assets/player-character.svg');
+         this.load.svg('byte', 'assets/byte-ai-companion.svg');
+         this.load.svg('tileset', 'assets/command-center-tileset.svg');
+         this.load.svg('ui', 'assets/ui-elements.svg');
+     }
+     ```
+
+2. **Sprite Extraction**
+   - For extracting frames from sprite sheets, use Phaser's `TextureManager`:
+     ```javascript
+     // Example for player character frames
+     function create() {
+         // Create front facing animation
+         this.anims.create({
+             key: 'player-front',
+             frames: [ { key: 'player', frame: 0 } ],
+             frameRate: 10
+         });
+         
+         // Similarly for other directions
+     }
+     ```
+
+3. **Tile Mapping**
+   - For building levels with the tileset:
+     ```javascript
+     // In create function
+     const map = this.make.tilemap({ key: 'level-1' });
+     const tiles = map.addTilesetImage('command-center', 'tileset');
+     
+     const floorLayer = map.createLayer('Floor', tiles);
+     const wallLayer = map.createLayer('Walls', tiles);
+     
+     // Add collision
+     wallLayer.setCollisionByProperty({ collides: true });
+     this.physics.add.collider(player, wallLayer);
+     ```
+
+4. **UI Implementation**
+   - For displaying UI elements:
+     ```javascript
+     // Create code editor
+     this.add.image(x, y, 'ui', 'editor').setOrigin(0);
+     
+     // Create ask byte button with interaction
+     const askByteBtn = this.add.image(x, y, 'ui', 'ask-byte')
+         .setInteractive()
+         .on('pointerover', () => askByteBtn.setTexture('ui', 'ask-byte-hover'))
+         .on('pointerout', () => askByteBtn.setTexture('ui', 'ask-byte'))
+         .on('pointerdown', () => this.askByteForHelp());
+     ```
+
+## Asset Maintenance
+
+These SVG assets are designed to be easily maintainable and extensible:
+
+1. **Adding Character Animations**
+   - Extend the player-character.svg with additional frames for walking animations
+   - Maintain the same 64x64 grid structure and style
+
+2. **Expanding the Tileset**
+   - Add new rows to command-center-tileset.svg for additional environmental elements
+   - Follow the established 32x32 grid pattern
+
+3. **UI Modifications**
+   - Add or modify components in ui-elements.svg as feature requirements evolve
+   - Maintain consistent styling with existing elements
+
+4. **Optimizing for Performance**
+   - If performance issues arise with SVG rendering, consider converting to PNG sprite sheets
+   - Maintain original SVGs as source files for future modifications
+
+These assets are designed to work together to create a cohesive visual experience that supports the educational goals of CodeQuest while maintaining an appealing sci-fi aesthetic that will engage the target audience.
+
+## Integration with Claude Code
+
+To ensure Claude Code can effectively work with these assets in your development workflow:
+
+1. **Repository Organization**
+   - Place these assets in an `/assets` or `/src/assets` directory in your GitHub repository
+   - Include this documentation file in the same directory as `asset-documentation.md`
+
+2. **Working with Claude Code**
+   - Claude Code will automatically explore your project structure to understand these assets
+   - When asking Claude Code to implement these assets, reference this documentation file:
+     ```
+     Please implement the player character from the SVG asset in assets/player-character.svg. 
+     Refer to assets/asset-documentation.md for implementation details.
+     ```
+
+3. **Implementation Examples**
+   - For specific implementation tasks, provide Claude Code with concrete examples:
+     ```
+     Use the "Floor with indicator light" tile at position (96,0) in the command-center-tileset.svg 
+     to create interactive floor triggers in level one.
+     ```
+
+4. **Asset Modifications**
+   - When requesting modifications to assets, be specific about which elements to change:
+     ```
+     Please modify the Byte AI companion's "happy" state (at position 72,24) to have 
+     a brighter color palette.
+     ```
+
+These guidelines will help ensure smooth collaboration between your Claude project planning and Claude Code implementation phases.
