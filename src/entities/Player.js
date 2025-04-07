@@ -20,7 +20,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     
     // Set player physics properties
     this.setCollideWorldBounds(true);
-    this.body.setSize(24, 28); // Hitbox size slightly smaller than sprite
+    this.body.setSize(48, 56); // Hitbox size slightly smaller than 64x64 sprite
     
     // Movement state
     this.movementState = {
@@ -88,17 +88,19 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         }
       };
       
-      // Idle animations for each direction
-      createAnimSafely('player-idle-down', 0, 3, 8, -1);
-      createAnimSafely('player-idle-up', 4, 7, 8, -1);
-      createAnimSafely('player-idle-left', 8, 11, 8, -1);
-      createAnimSafely('player-idle-right', 12, 15, 8, -1);
+      // Idle animations for each direction - using the frames defined in SVG asset
+      // Front, back, left, right views as specified in asset-documentation.txt
+      createAnimSafely('player-idle-down', 0, 0, 8, -1); // Front view at (32, 32)
+      createAnimSafely('player-idle-up', 1, 1, 8, -1);   // Back view at (96, 32)
+      createAnimSafely('player-idle-left', 2, 2, 8, -1); // Left view at (160, 32)
+      createAnimSafely('player-idle-right', 3, 3, 8, -1); // Right view at (224, 32)
       
-      // Walk animations for each direction
-      createAnimSafely('player-walk-down', 16, 23, 12, -1);
-      createAnimSafely('player-walk-up', 24, 31, 12, -1);
-      createAnimSafely('player-walk-left', 32, 39, 12, -1);
-      createAnimSafely('player-walk-right', 40, 47, 12, -1);
+      // For walking animations, we'll use the same frames since the SVG doesn't have
+      // separate walking animations yet, but we're setting up the structure for future updates
+      createAnimSafely('player-walk-down', 0, 0, 12, -1);
+      createAnimSafely('player-walk-up', 1, 1, 12, -1);
+      createAnimSafely('player-walk-left', 2, 2, 12, -1);
+      createAnimSafely('player-walk-right', 3, 3, 12, -1);
     } catch (error) {
       console.error('Error in createAnimations:', error);
     }

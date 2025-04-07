@@ -90,16 +90,27 @@ class PreloadScene extends Phaser.Scene {
 
   loadImages() {
     // Load individual images
-    this.load.image('tileset', 'assets/images/tileset-placeholder.png');
-    this.load.image('player', 'assets/images/player-placeholder.png');
     this.load.image('background', 'assets/images/background-placeholder.png');
+    
+    // Load new SVG assets
+    this.load.svg('command-center-tileset', 'assets/command-center-tileset.svg');
+    this.load.svg('player-character', 'assets/player-character.svg');
+    this.load.svg('byte-ai-companion', 'assets/byte-ai-companion.svg');
+    this.load.svg('ui-elements', 'assets/ui-elements.svg');
   }
 
   loadSpritesheets() {
-    // Load sprite sheets
+    // Load sprite sheets from SVG assets
+    // Player character (using SVG with 64x64 frames)
     this.load.spritesheet('playerSheet', 
-      'assets/images/player-spritesheet-placeholder.png',
-      { frameWidth: 32, frameHeight: 32 }
+      'assets/player-character.svg',
+      { frameWidth: 64, frameHeight: 64 }
+    );
+    
+    // Byte AI companion (using SVG with 48x48 frames)
+    this.load.spritesheet('byteSheet',
+      'assets/byte-ai-companion.svg',
+      { frameWidth: 48, frameHeight: 48 }
     );
   }
 

@@ -192,7 +192,7 @@ class GameScene extends Phaser.Scene {
     // Load the command center tilemap
     this.tilemapManager.loadTilemap('command-center', {
       tilesets: [
-        { name: 'sci-fi-tileset', key: 'sci-fi-tileset' }
+        { name: 'command-center-tileset', key: 'command-center-tileset' }
       ],
       layers: ['floor', 'walls', 'objects'],
       collisionLayers: ['walls', 'objects']

@@ -65,11 +65,25 @@ class ByteInteractionUI {
    * Create the "Ask Byte" button
    */
   createAskButton() {
-    // Button background with rounded corners
-    this.buttonBg = this.scene.add.graphics();
-    this.buttonBg.fillStyle(0x4a9df8, 1);
-    this.buttonBg.fillRoundedRect(0, 0, this.options.width, this.options.height, 10);
+    // Using the "Ask Byte" button from ui-elements.svg located at (170,120)
+    // Creating a multi-state button with normal and hover states
+    
+    // Normal state button
+    this.buttonBg = this.scene.add.image(0, 0, 'ui-elements', 'ask-byte-button-normal')
+      .setOrigin(0, 0);
+    
+    // Set the button size to match the UI options
+    this.buttonBg.displayWidth = this.options.width;
+    this.buttonBg.displayHeight = this.options.height;
     this.container.add(this.buttonBg);
+    
+    // Create a hover state image (hidden initially)
+    this.buttonBgHover = this.scene.add.image(0, 0, 'ui-elements', 'ask-byte-button-hover')
+      .setOrigin(0, 0)
+      .setVisible(false);
+    this.buttonBgHover.displayWidth = this.options.width;
+    this.buttonBgHover.displayHeight = this.options.height;
+    this.container.add(this.buttonBgHover);
     
     // Button text
     this.buttonText = this.scene.add.text(
@@ -85,29 +99,14 @@ class ByteInteractionUI {
     ).setOrigin(0.5);
     this.container.add(this.buttonText);
     
-    // Add byte icon
-    this.byteIcon = this.scene.add.circle(
+    // Add byte icon from the sprite sheet
+    this.byteIcon = this.scene.add.sprite(
       this.options.padding + 10, 
-      this.options.height / 2, 
-      10, 
-      0x182635
-    );
-    this.byteIcon.setStrokeStyle(2, 0x8ac0ff);
-    this.container.add(this.byteIcon);
-    
-    // Add "B" to the icon
-    this.byteIconText = this.scene.add.text(
-      this.options.padding + 10,
       this.options.height / 2,
-      'B',
-      {
-        fontFamily: 'Arial',
-        fontSize: '12px',
-        color: '#4a9df8',
-        fontStyle: 'bold'
-      }
-    ).setOrigin(0.5);
-    this.container.add(this.byteIconText);
+      'byteSheet',
+      0 // Using neutral frame
+    ).setScale(0.5); // Scale down to fit on button
+    this.container.add(this.byteIcon);
     
     // Make button interactive
     this.buttonBg.setInteractive(
@@ -117,15 +116,13 @@ class ByteInteractionUI {
     
     // Add hover effects
     this.buttonBg.on('pointerover', () => {
-      this.buttonBg.clear();
-      this.buttonBg.fillStyle(0x5caeff, 1);
-      this.buttonBg.fillRoundedRect(0, 0, this.options.width, this.options.height, 10);
+      this.buttonBg.setVisible(false);
+      this.buttonBgHover.setVisible(true);
     });
     
     this.buttonBg.on('pointerout', () => {
-      this.buttonBg.clear();
-      this.buttonBg.fillStyle(0x4a9df8, 1);
-      this.buttonBg.fillRoundedRect(0, 0, this.options.width, this.options.height, 10);
+      this.buttonBg.setVisible(true);
+      this.buttonBgHover.setVisible(false);
     });
     
     // Add click handler
@@ -253,15 +250,15 @@ class ByteInteractionUI {
     
     // Button state
     if (this.isOpen) {
-      this.buttonBg.clear();
-      this.buttonBg.fillStyle(0x3a89e0, 1);
-      this.buttonBg.fillRoundedRect(0, 0, this.options.width, this.options.height, 10);
       this.buttonText.setText('Close');
+      
+      // Update the Byte icon to show thinking state
+      this.byteIcon.setFrame(2); // Thinking frame
     } else {
-      this.buttonBg.clear();
-      this.buttonBg.fillStyle(0x4a9df8, 1);
-      this.buttonBg.fillRoundedRect(0, 0, this.options.width, this.options.height, 10);
       this.buttonText.setText(this.options.buttonText);
+      
+      // Reset the Byte icon to neutral state
+      this.byteIcon.setFrame(0); // Neutral frame
     }
     
     // Add animation

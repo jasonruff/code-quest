@@ -27,13 +27,21 @@ export function getAssetManifest(section = 'core') {
         { key: 'progressBar', path: 'assets/images/progress-bar.png' },
         { key: 'progressBarFill', path: 'assets/images/progress-bar-fill.png' },
         { key: 'background', path: 'assets/images/background-placeholder.png' },
-        { key: 'tileset', path: 'assets/images/tileset-placeholder.png' }
+        { key: 'command-center-tileset', path: 'assets/command-center-tileset.svg' },
+        { key: 'player-character', path: 'assets/player-character.svg' },
+        { key: 'byte-ai-companion', path: 'assets/byte-ai-companion.svg' },
+        { key: 'ui-elements', path: 'assets/ui-elements.svg' }
       ],
       spritesheets: [
         { 
           key: 'playerSheet', 
-          path: 'assets/images/player-spritesheet-placeholder.png',
-          config: { frameWidth: 32, frameHeight: 32 } 
+          path: 'assets/player-character.svg',
+          config: { frameWidth: 64, frameHeight: 64 } 
+        },
+        {
+          key: 'byteSheet',
+          path: 'assets/byte-ai-companion.svg',
+          config: { frameWidth: 48, frameHeight: 48 }
         }
       ],
       audio: [

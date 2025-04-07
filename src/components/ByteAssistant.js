@@ -54,23 +54,18 @@ class ByteAssistant {
     // Create the hologram effect
     this.createHologramEffect();
     
-    // Create assistant avatar background circle
-    this.avatarCircle = this.scene.add.circle(0, 0, 40, 0x4a9df8, 1);
-    this.avatarCircle.setStrokeStyle(3, 0x8ac0ff);
-    this.container.add(this.avatarCircle);
+    // Create Byte sprite using the new SVG asset
+    this.byteSprite = this.scene.add.sprite(0, 0, 'byteSheet', 0);
+    this.byteSprite.setScale(1.2); // Scale to appropriate size
+    this.container.add(this.byteSprite);
     
-    // Create inner circle
-    this.innerCircle = this.scene.add.circle(0, 0, 36, 0x182635, 1);
-    this.container.add(this.innerCircle);
+    // Create animations for Byte using the spritesheet frames
+    this.createByteAnimations();
     
-    // Create 'B' character
-    this.avatarText = this.scene.add.text(0, 0, 'B', {
-      fontFamily: 'Arial',
-      fontSize: '32px',
-      color: '#4a9df8',
-      fontStyle: 'bold'
-    }).setOrigin(0.5);
-    this.container.add(this.avatarText);
+    // We'll keep these variables for backward compatibility, but they won't be used visually
+    this.avatarCircle = { setFillStyle: () => {}, setStrokeStyle: () => {}, setVisible: () => {} };
+    this.innerCircle = { setAngle: () => {}, setScale: () => {}, setVisible: () => {} };
+    this.avatarText = { setColor: () => {}, setVisible: () => {} };
     
     // Create speech bubble (initially hidden)
     this.createSpeechBubble();
@@ -391,6 +386,53 @@ class ByteAssistant {
   }
   
   /**
+   * Create animations for Byte from the sprite sheet
+   */
+  createByteAnimations() {
+    const anims = this.scene.anims;
+    
+    // Define animations using the frames from byte-ai-companion.svg
+    // Each state/mood is at a specific position in the sprite sheet
+    // Positions per asset documentation: neutral(24,24), happy(72,24), thinking(120,24), confused(168,24)
+    
+    if (!anims.exists('byte-neutral')) {
+      anims.create({
+        key: 'byte-neutral',
+        frames: [{ key: 'byteSheet', frame: 0 }], // Neutral/Default at first frame
+        frameRate: 5,
+        repeat: -1
+      });
+    }
+    
+    if (!anims.exists('byte-happy')) {
+      anims.create({
+        key: 'byte-happy',
+        frames: [{ key: 'byteSheet', frame: 1 }], // Happy at second frame
+        frameRate: 5,
+        repeat: -1
+      });
+    }
+    
+    if (!anims.exists('byte-thinking')) {
+      anims.create({
+        key: 'byte-thinking',
+        frames: [{ key: 'byteSheet', frame: 2 }], // Thinking at third frame
+        frameRate: 5,
+        repeat: -1
+      });
+    }
+    
+    if (!anims.exists('byte-confused')) {
+      anims.create({
+        key: 'byte-confused',
+        frames: [{ key: 'byteSheet', frame: 3 }], // Confused at fourth frame
+        frameRate: 5,
+        repeat: -1
+      });
+    }
+  }
+  
+  /**
    * Create animations for different character moods
    */
   createMoodAnimations() {
@@ -411,20 +453,16 @@ class ByteAssistant {
    * Define the animations for each mood
    */
   defineMoodAnimations() {
-    // Idle animation - subtle pulsing
+    // Idle animation - neutral
     this.moodAnimations.idle = () => {
-      // Reset any existing color tweens
-      this.resetColorTweens();
+      // Play the neutral sprite animation
+      this.byteSprite.play('byte-neutral');
       
-      // Set base color
-      this.avatarCircle.setFillStyle(0x4a9df8);
-      this.avatarText.setColor('#4a9df8');
-      
-      // Add subtle pulse animation
+      // Add subtle pulse animation to the sprite
       return this.scene.tweens.add({
-        targets: [this.avatarCircle, this.innerCircle],
-        scaleX: { from: 1, to: 1.05 },
-        scaleY: { from: 1, to: 1.05 },
+        targets: this.byteSprite,
+        scaleX: { from: 1.2, to: 1.25 },
+        scaleY: { from: 1.2, to: 1.25 },
         yoyo: true,
         duration: 2000,
         repeat: -1,
@@ -432,14 +470,10 @@ class ByteAssistant {
       });
     };
     
-    // Thinking animation - scanning effect
+    // Thinking animation
     this.moodAnimations.thinking = () => {
-      // Reset any existing color tweens
-      this.resetColorTweens();
-      
-      // Set thinking color
-      this.avatarCircle.setFillStyle(0x7c3aed); // Purple
-      this.avatarText.setColor('#7c3aed');
+      // Play the thinking sprite animation
+      this.byteSprite.play('byte-thinking');
       
       // Speed up scan line
       this.scene.tweens.add({
@@ -448,24 +482,22 @@ class ByteAssistant {
         repeatDelay: 300
       });
       
-      // Add rotation animation
+      // Add rotation animation to create thinking effect
       return this.scene.tweens.add({
-        targets: this.innerCircle,
-        angle: 360,
-        duration: 2000,
+        targets: this.byteSprite,
+        angle: 5,
+        y: { from: 0, to: -5 },
+        duration: 1000,
+        yoyo: true,
         repeat: -1,
-        ease: 'Linear'
+        ease: 'Sine.easeInOut'
       });
     };
     
-    // Happy animation - green color and bouncing
+    // Happy animation
     this.moodAnimations.happy = () => {
-      // Reset any existing color tweens
-      this.resetColorTweens();
-      
-      // Set happy color
-      this.avatarCircle.setFillStyle(0x33cc33); // Green
-      this.avatarText.setColor('#33cc33');
+      // Play the happy sprite animation
+      this.byteSprite.play('byte-happy');
       
       // Add bouncing animation
       return this.scene.tweens.add({
@@ -478,14 +510,10 @@ class ByteAssistant {
       });
     };
     
-    // Confused animation - color shift and wobble
+    // Confused animation
     this.moodAnimations.confused = () => {
-      // Reset any existing color tweens
-      this.resetColorTweens();
-      
-      // Set confused color
-      this.avatarCircle.setFillStyle(0xffaa33); // Orange
-      this.avatarText.setColor('#ffaa33');
+      // Play the confused sprite animation
+      this.byteSprite.play('byte-confused');
       
       // Add wobble animation
       return this.scene.tweens.add({
@@ -502,44 +530,26 @@ class ByteAssistant {
       });
     };
     
-    // Excited animation - colorful and energetic
+    // Excited animation - use happy sprite with more energetic animations
     this.moodAnimations.excited = () => {
-      // Reset any existing color tweens
-      this.resetColorTweens();
+      // Play the happy sprite animation
+      this.byteSprite.play('byte-happy');
       
-      // Add color cycling tween
-      const colorTween = this.scene.tweens.addCounter({
-        from: 0,
-        to: 100,
-        duration: 1000,
-        repeat: 3,
-        onUpdate: (tween) => {
-          // Cycle through colors
-          const value = tween.getValue();
-          // Create rainbow effect
-          const r = Math.floor(Math.sin(value * 0.01 * Math.PI) * 127 + 128);
-          const g = Math.floor(Math.sin(value * 0.01 * Math.PI + 2) * 127 + 128);
-          const b = Math.floor(Math.sin(value * 0.01 * Math.PI + 4) * 127 + 128);
-          
-          const color = Phaser.Display.Color.GetColor(r, g, b);
-          this.avatarCircle.setFillStyle(color);
-          
-          // Set text color
-          const colorHex = Phaser.Display.Color.RGBToString(r, g, b, 0, '#');
-          this.avatarText.setColor(colorHex);
-        },
-        onComplete: () => {
-          // Return to default color
-          this.avatarCircle.setFillStyle(0x4a9df8);
-          this.avatarText.setColor('#4a9df8');
-        }
+      // Add more dynamic animations for excitement
+      this.scene.tweens.add({
+        targets: this.glow,
+        alpha: 0.7,
+        scale: 1.5,
+        duration: 300,
+        yoyo: true,
+        repeat: 5
       });
       
       // Add scaling animation
       return this.scene.tweens.add({
-        targets: [this.avatarCircle, this.innerCircle],
-        scaleX: { from: 1, to: 1.2 },
-        scaleY: { from: 1, to: 1.2 },
+        targets: this.byteSprite,
+        scaleX: { from: 1.2, to: 1.4 },
+        scaleY: { from: 1.2, to: 1.4 },
         duration: 200,
         yoyo: true,
         repeat: 3
